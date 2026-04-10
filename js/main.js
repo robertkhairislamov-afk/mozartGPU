@@ -261,6 +261,94 @@ document.querySelectorAll('.dev-tab').forEach(tab => {
   });
 });
 
+// ===== Contact Form — fetch POST to /api/v1/contact =====
+(() => {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  const statusEl = document.getElementById('contact-status');
+  const submitBtn = document.getElementById('contact-submit');
+
+  const showStatus = (msg, isError) => {
+    statusEl.textContent = msg;
+    statusEl.style.display = 'block';
+    statusEl.className = `contact-status contact-status--${isError ? 'error' : 'success'}`;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const firstName = form.querySelector('#firstName').value.trim();
+    const lastName  = form.querySelector('#lastName').value.trim();
+    const email     = form.querySelector('#email').value.trim();
+    const company   = form.querySelector('#company').value.trim();
+    const gpuRadio  = form.querySelector('input[name="gpu"]:checked');
+    const message   = form.querySelector('#message').value.trim();
+
+    const payload = {
+      name:     `${firstName} ${lastName}`.trim(),
+      email,
+      company:  company || null,
+      gpu_type: gpuRadio ? gpuRadio.value : null,
+      message:  message  || null,
+    };
+
+    submitBtn.disabled = true;
+    statusEl.style.display = 'none';
+
+    try {
+      const res = await fetch('/api/v1/contact', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+
+      const lang = document.documentElement.lang || 'en';
+      if (res.ok) {
+        showStatus(lang === 'ru'
+          ? 'Спасибо! Мы свяжемся с вами в ближайшее время.'
+          : 'Thank you! We will contact you soon.', false);
+        form.reset();
+        form.querySelectorAll('.form-radio').forEach(r => r.classList.remove('selected'));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showStatus(data.detail || (lang === 'ru'
+          ? 'Произошла ошибка. Попробуйте снова.'
+          : 'Something went wrong. Please try again.'), true);
+      }
+    } catch {
+      showStatus(lang === 'ru'
+        ? 'Ошибка сети. Напишите в Telegram для быстрой поддержки.'
+        : 'Network error. Please try Telegram for fastest support.', true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+})();
+
+// ===== /pricing URL scroll redirect =====
+(() => {
+  const { pathname, hash } = window.location;
+  const target = (pathname === '/pricing' || pathname === '/pricing/')
+    ? '#packages'
+    : (hash === '#pricing' ? '#packages' : null);
+
+  if (!target) return;
+
+  const scrollToPackages = () => {
+    const el = document.querySelector(target) || document.querySelector('#packages');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Wait for loader to finish before scrolling
+  const loader = document.querySelector('.loader');
+  if (loader && !loader.classList.contains('loaded')) {
+    loader.addEventListener('transitionend', scrollToPackages, { once: true });
+  } else {
+    scrollToPackages();
+  }
+})();
+
 // ===== Social Proof Counter Animation =====
 const counters = document.querySelectorAll('.sp-number[data-target]');
 if (counters.length) {

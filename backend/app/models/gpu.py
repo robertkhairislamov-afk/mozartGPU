@@ -21,12 +21,15 @@ class GpuModel(Base):
     )
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     short_name: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    slug: Mapped[str] = mapped_column(String(30), nullable=False, unique=True, index=True)
     vram_gb: Mapped[int] = mapped_column(Integer, nullable=False)
     tflops_fp16: Mapped[float] = mapped_column(Float, nullable=False)
     # Our selling price to the client
     price_per_hour: Mapped[Decimal] = mapped_column(
         Numeric(10, 4), nullable=False
     )
+    # Purchasable packages: [{"hours": 10, "price_usd": "25.00"}, ...]
+    packages: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     # Filter dict used when searching vast.ai offers
     vast_filter: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

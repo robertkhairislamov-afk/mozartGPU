@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, func, BigInteger
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,6 +13,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.gpu import GpuModel
+    from app.models.billing import Invoice
 
 
 class InstanceStatus(str, enum.Enum):
@@ -49,9 +50,13 @@ class Instance(Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     stopped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    invoice_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("invoices.id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
     user: Mapped["User"] = relationship(back_populates="instances")
     gpu_model: Mapped["GpuModel"] = relationship(back_populates="instances")
+    invoice: Mapped["Invoice | None"] = relationship()

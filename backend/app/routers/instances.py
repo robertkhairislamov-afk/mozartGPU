@@ -85,6 +85,10 @@ async def create_instance(
         await db.commit()
         raise HTTPException(status_code=502, detail=f"GPU provisioning failed: {exc}")
 
+    await db.commit()
+    await db.refresh(instance)
+    return instance
+
 
 @router.get("/", response_model=list[InstanceResponse])
 async def list_instances(current_user: CurrentUser, db: DbDep) -> list[Instance]:

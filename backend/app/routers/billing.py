@@ -1,14 +1,18 @@
+import hashlib
+import hmac
 import logging
-from datetime import UTC, datetime, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import httpx
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.deps import CurrentUser, DbDep
 from app.models.billing import Invoice, InvoiceStatus
+from app.models.gpu import GpuModel
 from app.models.instance import Instance, InstanceStatus
 from app.schemas.billing import (
     BalanceItem,
@@ -22,23 +26,58 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# GPU_PACKAGES mirrors auto_provision.py — package_id → price in USD
-_PACKAGE_PRICES: dict[str, Decimal] = {
-    "rtx4090_10h": Decimal("8.00"),
-    "rtx4090_50h": Decimal("38.00"),
-    "a100_10h":    Decimal("18.00"),
-    "a100_50h":    Decimal("85.00"),
-    "h100_10h":    Decimal("25.00"),
-    "h100_50h":    Decimal("120.00"),
-}
 
+# ---------------------------------------------------------------------------
+# Pricing lookup — single source of truth from gpu_models table
+# ---------------------------------------------------------------------------
+
+async def _resolve_package_price(package_id: str, db) -> Decimal:
+    """
+    Look up the price for a package_id from the gpu_models table.
+    package_id format: "{slug}_{hours}h"  e.g. "h100_10h", "rtx4090_50h"
+    """
+    try:
+        slug, hours_part = package_id.rsplit("_", 1)
+        if not hours_part.endswith("h"):
+            raise ValueError("missing 'h' suffix")
+        hours = int(hours_part[:-1])
+    except (ValueError, AttributeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid package_id format: '{package_id}'. Expected '{{slug}}_{{hours}}h'.",
+        )
+
+    result = await db.execute(
+        select(GpuModel).where(GpuModel.slug == slug)
+    )
+    gpu = result.scalar_one_or_none()
+
+    if gpu is None or not gpu.is_available:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown or unavailable GPU: '{slug}'",
+        )
+
+    for pkg in gpu.packages:
+        if pkg.get("hours") == hours:
+            return Decimal(pkg["price_usd"])
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Package '{package_id}' not found. "
+               f"Available: {[f'{slug}_{p[\"hours\"]}h' for p in gpu.packages]}",
+    )
+
+
+# ---------------------------------------------------------------------------
+# BTCPay invoice creation
+# ---------------------------------------------------------------------------
 
 async def _create_btcpay_invoice(
     amount_usd: Decimal,
     package_id: str,
     buyer_email: str,
 ) -> dict:
-    """Call BTCPay Server to create a new invoice."""
     url = f"{settings.btcpay_url}/api/v1/stores/{settings.btcpay_store_id}/invoices"
     headers = {
         "Authorization": f"token {settings.btcpay_api_key}",
@@ -59,6 +98,10 @@ async def _create_btcpay_invoice(
         return resp.json()
 
 
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
 @router.post("/deposit", response_model=DepositResponse, status_code=status.HTTP_201_CREATED)
 async def create_deposit(
     payload: DepositRequest,
@@ -66,12 +109,7 @@ async def create_deposit(
     db: DbDep,
 ) -> DepositResponse:
     """Create a BTCPay invoice for a GPU package deposit."""
-    amount = _PACKAGE_PRICES.get(payload.package_id)
-    if amount is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown package_id: {payload.package_id}",
-        )
+    amount = await _resolve_package_price(payload.package_id, db)
 
     buyer_email = payload.email or current_user.email
 
@@ -115,6 +153,79 @@ async def create_deposit(
     )
 
 
+# ---------------------------------------------------------------------------
+# BTCPay webhook — receives InvoiceSettled events (баг #3)
+# ---------------------------------------------------------------------------
+
+@router.post("/webhook/btcpay", status_code=status.HTTP_200_OK)
+async def btcpay_webhook(request: Request, db: DbDep) -> dict:
+    """Receive BTCPay Server webhook, verify HMAC, update Invoice status."""
+    raw_body = await request.body()
+
+    if len(raw_body) > 16384:
+        raise HTTPException(status_code=413, detail="Payload too large")
+
+    # Verify HMAC-SHA256 signature
+    sig_header = request.headers.get("BTCPay-Sig")
+    if not settings.btcpay_webhook_secret:
+        logger.error("BTCPAY_WEBHOOK_SECRET not configured — rejecting")
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    if not sig_header or not sig_header.startswith("sha256="):
+        raise HTTPException(status_code=401, detail="Missing or invalid signature")
+
+    expected_hex = sig_header[len("sha256="):]
+    computed = hmac.new(
+        settings.btcpay_webhook_secret.encode(),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(computed, expected_hex):
+        logger.warning("Webhook HMAC verification failed")
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    import json
+    payload = json.loads(raw_body)
+    event_type = payload.get("type")
+    logger.info("BTCPay webhook: type=%s", event_type)
+
+    if event_type != "InvoiceSettled":
+        return {"status": "ignored", "event": event_type}
+
+    invoice_id = payload.get("invoiceId")
+    if not invoice_id:
+        return {"status": "error", "detail": "missing invoiceId"}
+
+    # Find and update invoice
+    result = await db.execute(
+        select(Invoice).where(Invoice.btcpay_invoice_id == invoice_id)
+    )
+    invoice = result.scalar_one_or_none()
+
+    if invoice is None:
+        logger.warning("Invoice %s not found in DB", invoice_id)
+        return {"status": "not_found", "invoice": invoice_id}
+
+    if invoice.status == InvoiceStatus.settled:
+        return {"status": "duplicate", "invoice": invoice_id}
+
+    invoice.status = InvoiceStatus.settled
+    invoice.settled_at = datetime.now(timezone.utc)
+
+    # Update user total_spent_usd
+    from app.models.user import User
+    user_result = await db.execute(select(User).where(User.id == invoice.user_id))
+    user = user_result.scalar_one_or_none()
+    if user and hasattr(user, "total_spent_usd"):
+        user.total_spent_usd = (user.total_spent_usd or Decimal("0")) + invoice.amount_usd
+
+    await db.commit()
+    logger.info("Invoice %s settled (amount=$%s)", invoice_id, invoice.amount_usd)
+
+    return {"status": "settled", "invoice": invoice_id}
+
+
 @router.get("/invoices", response_model=list[InvoiceResponse])
 async def list_invoices(current_user: CurrentUser, db: DbDep) -> list[Invoice]:
     """List all invoices for the authenticated user."""
@@ -129,9 +240,6 @@ async def list_invoices(current_user: CurrentUser, db: DbDep) -> list[Invoice]:
 @router.get("/balance", response_model=BalanceResponse)
 async def get_balance(current_user: CurrentUser, db: DbDep) -> BalanceResponse:
     """Return hours remaining per active/running instance and total spend."""
-    # Fetch non-destroyed instances with their GPU model
-    from sqlalchemy.orm import selectinload
-
     result = await db.execute(
         select(Instance)
         .options(selectinload(Instance.gpu_model))
@@ -154,7 +262,6 @@ async def get_balance(current_user: CurrentUser, db: DbDep) -> BalanceResponse:
             )
         )
 
-    # Total spent = sum of settled invoices
     inv_result = await db.execute(
         select(Invoice).where(
             Invoice.user_id == current_user.id,

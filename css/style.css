@@ -1626,6 +1626,41 @@ textarea.form-input {
   min-height: 100px;
 }
 
+/* ===== Contact form status message ===== */
+.contact-status {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.contact-status--success {
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  color: var(--gold);
+}
+
+.contact-status--error {
+  background: rgba(128, 0, 32, 0.12);
+  border: 1px solid rgba(128, 0, 32, 0.45);
+  color: #e05070;
+}
+
+/* ===== Console nav link — gold accent ===== */
+.nav-link--console .nav-link-text {
+  color: var(--gold);
+}
+
+.nav-link--console .nav-link-dot {
+  background: var(--gold);
+  opacity: 0;
+}
+
+.nav-link--console:hover .nav-link-dot {
+  opacity: 1;
+}
+
 /* ===== Focus Visible ===== */
 .form-input:focus-visible {
   outline: 2px solid var(--gold);

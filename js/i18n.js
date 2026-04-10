@@ -90,13 +90,13 @@
       'industry-8__title': 'Batch Processing',
       'industry-8__body':  'Process large-scale data workloads efficiently with GPU-accelerated batch computing pipelines.',
 
-      // ── Developer Experience ──
-      'dev__label':    'Developer Experience',
-      'dev__headline': 'Built for Developers',
-      'dev__subline':  'CLI, Python SDK, REST API. Your workflow, your way.',
-      'dev__tab_cli':    'CLI',
-      'dev__tab_python': 'Python SDK',
-      'dev__tab_api':    'REST API',
+      // ── Access Methods Section ──
+      'dev__label':    'Access Methods',
+      'dev__headline': 'Three Ways to Rent',
+      'dev__subline':  'Dashboard UI, Telegram Bot, and BTCPay crypto checkout. No CLI required.',
+      'dev__tab_cli':    'Dashboard',
+      'dev__tab_python': 'Telegram Bot',
+      'dev__tab_api':    'Crypto Payment',
 
       // ── GPU Catalog / Portfolio ──
       'portfolio__label':    'Available GPUs',
@@ -336,13 +336,13 @@
       'industry-8__title': '\u041f\u0430\u043a\u0435\u0442\u043d\u0430\u044f \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430',
       'industry-8__body':  '\u042d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e \u043e\u0431\u0440\u0430\u0431\u0430\u0442\u044b\u0432\u0430\u0439\u0442\u0435 \u043a\u0440\u0443\u043f\u043d\u044b\u0435 \u043d\u0430\u0431\u043e\u0440\u044b \u0434\u0430\u043d\u043d\u044b\u0445 \u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e GPU-\u0443\u0441\u043a\u043e\u0440\u0435\u043d\u043d\u044b\u0445 \u043a\u043e\u043d\u0432\u0435\u0439\u0435\u0440\u043e\u0432 \u043f\u0430\u043a\u0435\u0442\u043d\u044b\u0445 \u0432\u044b\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u0439.',
 
-      // ── Developer Experience ──
-      'dev__label':    '\u041e\u043f\u044b\u0442 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u0430',
-      'dev__headline': '\u0421\u043e\u0437\u0434\u0430\u043d\u043e \u0434\u043b\u044f \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a\u043e\u0432',
-      'dev__subline':  'CLI, Python SDK, REST API. \u0412\u0430\u0448 \u0440\u0430\u0431\u043e\u0447\u0438\u0439 \u043f\u0440\u043e\u0446\u0435\u0441\u0441 \u2014 \u0432\u0430\u0448\u0438 \u043f\u0440\u0430\u0432\u0438\u043b\u0430.',
-      'dev__tab_cli':    'CLI',
-      'dev__tab_python': 'Python SDK',
-      'dev__tab_api':    'REST API',
+      // ── Access Methods Section ──
+      'dev__label':    '\u0421\u043f\u043e\u0441\u043e\u0431\u044b \u0434\u043e\u0441\u0442\u0443\u043f\u0430',
+      'dev__headline': '\u0422\u0440\u0438 \u0441\u043f\u043e\u0441\u043e\u0431\u0430 \u0430\u0440\u0435\u043d\u0434\u043e\u0432\u0430\u0442\u044c',
+      'dev__subline':  '\u0414\u0430\u0448\u0431\u043e\u0440\u0434, Telegram \u0431\u043e\u0442 \u0438 BTCPay \u043e\u043f\u043b\u0430\u0442\u0430 \u043a\u0440\u0438\u043f\u0442\u043e\u0432\u0430\u043b\u044e\u0442\u043e\u0439.',
+      'dev__tab_cli':    '\u0414\u0430\u0448\u0431\u043e\u0440\u0434',
+      'dev__tab_python': 'Telegram Bot',
+      'dev__tab_api':    '\u041e\u043f\u043b\u0430\u0442\u0430 \u043a\u0440\u0438\u043f\u0442\u043e\u0439',
 
       // ── GPU Catalog ──
       'portfolio__label':    '\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435 GPU',
@@ -586,13 +586,13 @@
     'industry-8__title': '.industry-item:nth-child(8) .industry-title',
     'industry-8__body':  '.industry-item:nth-child(8) .industry-description p',
 
-    // ── Developer Experience ──
+    // ── Access Methods Section ──
     'dev__label':    '.dev-header > span',
     'dev__headline': '.dev-header > h2',
     'dev__subline':  '.dev-header > p',
-    'dev__tab_cli':    '.dev-tabs .dev-tab[data-tab="cli"]',
-    'dev__tab_python': '.dev-tabs .dev-tab[data-tab="python"]',
-    'dev__tab_api':    '.dev-tabs .dev-tab[data-tab="api"]',
+    'dev__tab_cli':    '.dev-tabs .dev-tab[data-tab="dashboard"]',
+    'dev__tab_python': '.dev-tabs .dev-tab[data-tab="telegram"]',
+    'dev__tab_api':    '.dev-tabs .dev-tab[data-tab="crypto"]',
 
     // ── GPU Catalog / Portfolio ──
     'portfolio__label':    '.portfolio-header h2',

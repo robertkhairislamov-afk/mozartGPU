@@ -86,7 +86,7 @@
             </a>
           </li>
           <li>
-            <a href="#pricing" class="nav-link">
+            <a href="#packages" class="nav-link">
               <span class="nav-link-dot"></span>
               <span class="nav-link-text p2-mono">PRICING</span>
             </a>
@@ -95,6 +95,12 @@
             <a href="#" class="nav-link" data-open-contact>
               <span class="nav-link-dot"></span>
               <span class="nav-link-text p2-mono">CONTACT</span>
+            </a>
+          </li>
+          <li>
+            <a href="/console/" class="nav-link nav-link--console">
+              <span class="nav-link-dot"></span>
+              <span class="nav-link-text p2-mono">CONSOLE</span>
             </a>
           </li>
         </ul>
@@ -116,8 +122,9 @@
     <ul class="mobile-menu-list">
       <li class="mobile-menu-item"><a href="#ethos" class="p3-mono">WHY US</a></li>
       <li class="mobile-menu-item"><a href="#portfolio" class="p3-mono">SOLUTIONS</a></li>
-      <li class="mobile-menu-item"><a href="#pricing" class="p3-mono">PRICING</a></li>
+      <li class="mobile-menu-item"><a href="#packages" class="p3-mono">PRICING</a></li>
       <li class="mobile-menu-item full-width"><a href="#" class="p3-mono" data-open-contact>CONTACT</a></li>
+      <li class="mobile-menu-item full-width"><a href="/console/" class="p3-mono">CONSOLE</a></li>
       <li class="mobile-menu-item mobile-menu-lang">
         <div class="lang-switcher">
           <button class="lang-btn active" data-lang="en">EN</button>
@@ -379,50 +386,49 @@
     </div>
   </section>
 
-  <!-- ===== Developer Experience Section ===== -->
+  <!-- ===== Access Methods Section ===== -->
   <section class="dev-experience" id="developers">
     <div class="container">
       <div class="dev-header reveal">
-        <span class="p2-mono">Developer Experience</span>
-        <h2 class="h4 uppercase">Built for Developers</h2>
-        <p class="p1" style="max-width:500px;opacity:0.7">CLI, Python SDK, REST API. Your workflow, your way.</p>
+        <span class="p2-mono">Access Methods</span>
+        <h2 class="h4 uppercase">Three Ways to Rent</h2>
+        <p class="p1" style="max-width:500px;opacity:0.7">Dashboard UI, Telegram Bot, and BTCPay crypto checkout. No CLI required.</p>
       </div>
       <div class="dev-content reveal">
         <div class="dev-tabs">
-          <button class="dev-tab active p2-mono" data-tab="cli">CLI</button>
-          <button class="dev-tab p2-mono" data-tab="python">Python SDK</button>
-          <button class="dev-tab p2-mono" data-tab="api">REST API</button>
+          <button class="dev-tab active p2-mono" data-tab="dashboard">Dashboard</button>
+          <button class="dev-tab p2-mono" data-tab="telegram">Telegram Bot</button>
+          <button class="dev-tab p2-mono" data-tab="crypto">Crypto Payment</button>
         </div>
         <div class="dev-code-wrapper">
-          <pre class="dev-code active" data-tab="cli"><code><span class="code-comment"># Install MOZART CLI</span>
-<span class="code-cmd">$</span> pip install mozart-gpu
-<span class="code-cmd">$</span> mozart login
-<span class="code-cmd">$</span> mozart search --gpu H100 --region eu-west
-<span class="code-cmd">$</span> mozart create --gpu H100 --image pytorch:2.3 --disk 100
-<span class="code-output">&gt; Instance ready: ssh root@185.x.x.x -p 22</span></code></pre>
-          <pre class="dev-code" data-tab="python"><code><span class="code-keyword">from</span> mozart <span class="code-keyword">import</span> MozartClient
+          <pre class="dev-code active" data-tab="dashboard"><code><span class="code-comment"># Web Console — /console/</span>
+<span class="code-comment"># 1. Pick GPU model and package</span>
+<span class="code-comment"># 2. Pay via BTCPay (BTC / USDT / USDC)</span>
+<span class="code-comment"># 3. Receive SSH credentials automatically</span>
 
-client = MozartClient(api_key=<span class="code-string">"your-key"</span>)
+<span class="code-output">&gt; Instance provisioned: ssh root@185.x.x.x -p 22</span>
+<span class="code-output">&gt; CUDA 12.4 · PyTorch 2.3 · 80 GB HBM3 ready</span></code></pre>
+          <pre class="dev-code" data-tab="telegram"><code><span class="code-comment"># Telegram Bot — @mozartgpu_bot</span>
+<span class="code-comment"># Fast-track order flow via chat</span>
 
-instance = client.create(
-    gpu=<span class="code-string">"H100"</span>,
-    image=<span class="code-string">"pytorch:2.3"</span>,
-    disk_gb=<span class="code-number">100</span>,
-    region=<span class="code-string">"eu-west"</span>
-)
+<span class="code-cmd">/start</span>       <span class="code-comment">— welcome & menu</span>
+<span class="code-cmd">/rent</span>        <span class="code-comment">— choose GPU + package</span>
+<span class="code-cmd">/pay</span>         <span class="code-comment">— get crypto invoice link</span>
+<span class="code-cmd">/status</span>      <span class="code-comment">— check your active instance</span>
 
-<span class="code-keyword">print</span>(f<span class="code-string">"SSH: {instance.ssh_command}"</span>)</code></pre>
-          <pre class="dev-code" data-tab="api"><code><span class="code-cmd">$</span> curl -X POST https://api.mozartgpu.com/v1/instances \
-  -H <span class="code-string">"Authorization: Bearer YOUR_API_KEY"</span> \
-  -H <span class="code-string">"Content-Type: application/json"</span> \
-  -d <span class="code-string">'{
-    "gpu": "H100",
-    "image": "pytorch:2.3",
-    "disk_gb": 100,
-    "region": "eu-west"
-  }'</span></code></pre>
+<span class="code-output">&gt; SSH credentials sent once payment confirms</span></code></pre>
+          <pre class="dev-code" data-tab="crypto"><code><span class="code-comment"># BTCPay Server — self-custodial payments</span>
+<span class="code-comment"># Accepted: BTC · USDT (TRC-20) · USDC (ERC-20)</span>
+
+<span class="code-output">&gt; Invoice generated — expires in 15 min</span>
+<span class="code-output">&gt; Confirmation: 1 block (BTC) / instant (USDT)</span>
+<span class="code-output">&gt; No KYC · No bank account · No intermediaries</span>
+<span class="code-output">&gt; Powered by BTCPay Server — open source</span></code></pre>
         </div>
       </div>
+      <p class="p3-mono reveal" style="margin-top:32px;opacity:0.4;text-align:center">
+        REST API &amp; Python SDK — <span style="color:var(--gold)">Coming Soon</span>
+      </p>
     </div>
   </section>
 
@@ -434,7 +440,7 @@ instance = client.create(
         <p class="h5 uppercase" style="margin-bottom:24px;text-wrap:balance">
           Enterprise hardware. Cloud prices. Instant access.
         </p>
-        <a href="#pricing" class="btn btn-cornered btn-light">
+        <a href="#packages" class="btn btn-cornered btn-light">
           <span class="btn-dot"></span>
           <span class="btn-text-wrapper p2-mono">
             <span class="btn-text">View pricing</span>
@@ -456,7 +462,7 @@ instance = client.create(
             <span>3.35 TB/s</span>
             <span>990 TFLOPS</span>
           </div>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -476,7 +482,7 @@ instance = client.create(
             <span>2.0 TB/s</span>
             <span>312 TFLOPS</span>
           </div>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -496,7 +502,7 @@ instance = client.create(
             <span>864 GB/s</span>
             <span>362 TFLOPS</span>
           </div>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -516,7 +522,7 @@ instance = client.create(
             <span>1.0 TB/s</span>
             <span>165 TFLOPS FP32</span>
           </div>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -536,7 +542,7 @@ instance = client.create(
             <span>936 GB/s</span>
             <span>142 TFLOPS</span>
           </div>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -639,7 +645,7 @@ instance = client.create(
             <li>CUDA 12.4 pre-installed</li>
             <li>50 GB storage included</li>
           </ul>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -659,7 +665,7 @@ instance = client.create(
             <li>100 GB storage included</li>
             <li>Save 11% vs hourly</li>
           </ul>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -680,7 +686,7 @@ instance = client.create(
             <li>Save 12% vs hourly</li>
             <li>Priority support</li>
           </ul>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -978,7 +984,7 @@ instance = client.create(
                 <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">PRODUCT</h4>
                 <ul>
                   <li><a href="#portfolio" class="footer-link p2-mono">GPU Catalog</a></li>
-                  <li><a href="#pricing" class="footer-link p2-mono">Pricing</a></li>
+                  <li><a href="#packages" class="footer-link p2-mono">Pricing</a></li>
                   <li><a href="#" class="footer-link p2-mono">Enterprise</a></li>
                   <li><a href="#" class="footer-link p2-mono">Status Page</a></li>
                 </ul>
@@ -1037,7 +1043,7 @@ instance = client.create(
             </span>
           </a>
         </div>
-        <form style="display:flex;flex-direction:column;gap:20px" onsubmit="event.preventDefault();alert('Thank you! We will contact you soon.')">
+        <form id="contact-form" style="display:flex;flex-direction:column;gap:20px">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label p3-mono" for="firstName">First name *</label>
@@ -1072,7 +1078,8 @@ instance = client.create(
             <label class="form-label p3-mono" for="message">Message</label>
             <textarea id="message" class="form-input" placeholder="Tell us about your project (optional)"></textarea>
           </div>
-          <button type="submit" class="btn btn-cornered btn-dark" style="margin-top:12px;width:100%;justify-content:center;background:var(--rich-carbon);color:var(--off-white);border-radius:8px">
+          <div id="contact-status" class="contact-status" role="status" aria-live="polite" style="display:none"></div>
+          <button type="submit" id="contact-submit" class="btn btn-cornered btn-dark" style="margin-top:12px;width:100%;justify-content:center;background:var(--rich-carbon);color:var(--off-white);border-radius:8px">
             <span class="btn-text-wrapper p2-mono" style="color:var(--off-white)">
               <span class="btn-text">Send message</span>
               <span class="btn-text-clone" aria-hidden="true">Send message</span>

@@ -13,6 +13,7 @@ import os
 import threading
 from typing import Any
 
+import asyncpg
 import httpx
 import uvicorn
 from dotenv import load_dotenv
@@ -34,7 +35,11 @@ VAST_API_KEY           = os.getenv("VAST_API_KEY")
 TELEGRAM_BOT_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_ADMIN_CHAT_ID = os.getenv("TELEGRAM_ADMIN_CHAT_ID")
 BTCPAY_WEBHOOK_SECRET  = os.getenv("BTCPAY_WEBHOOK_SECRET")
+DATABASE_URL           = os.getenv("DATABASE_URL", "").replace("+asyncpg", "")
 PORT = int(os.getenv("PROVISION_WEBHOOK_PORT", "8081"))
+
+# Database connection pool (initialized on startup)
+_db_pool: asyncpg.Pool | None = None
 
 VAST_BASE          = "https://cloud.vast.ai/api/v0"
 TELEGRAM_API_BASE  = "https://api.telegram.org"
@@ -91,10 +96,53 @@ GPU_PACKAGES: dict[str, dict[str, Any]] = {
 
 app = FastAPI(title="MOZART Auto-Provision", version="1.0.0")
 
-# ---------------------------------------------------------------------------
-# Idempotency tracking — Fix 1: prevent replay attacks
-# ---------------------------------------------------------------------------
 
+@app.on_event("startup")
+async def _init_db_pool() -> None:
+    global _db_pool
+    if DATABASE_URL:
+        try:
+            _db_pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=5)
+            logger.info("Database pool created for shared DB")
+        except Exception as exc:
+            logger.warning("Could not connect to shared DB: %s — idempotency falls back to in-memory", exc)
+            _db_pool = None
+
+
+@app.on_event("shutdown")
+async def _close_db_pool() -> None:
+    global _db_pool
+    if _db_pool:
+        await _db_pool.close()
+
+
+async def _check_and_mark_processed(invoice_id: str) -> bool:
+    """Check if invoice was already processed. Returns True if duplicate."""
+    if _db_pool:
+        try:
+            row = await _db_pool.fetchrow(
+                "SELECT status FROM invoices WHERE btcpay_invoice_id = $1", invoice_id
+            )
+            if row and row["status"] == "settled":
+                return True
+            if row:
+                await _db_pool.execute(
+                    "UPDATE invoices SET status = 'settled', settled_at = NOW() WHERE btcpay_invoice_id = $1",
+                    invoice_id,
+                )
+            return False
+        except Exception as exc:
+            logger.warning("DB idempotency check failed: %s — falling back to in-memory", exc)
+
+    # Fallback to in-memory set
+    with _invoice_lock:
+        if invoice_id in _processed_invoices:
+            return True
+        _processed_invoices.add(invoice_id)
+        return False
+
+
+# In-memory fallback for idempotency
 _processed_invoices: set[str] = set()
 _invoice_lock = threading.Lock()
 
@@ -415,12 +463,10 @@ async def btcpay_webhook(request: Request) -> dict:
     client_email = metadata.get("buyerEmail") or metadata.get("email", "unknown@unknown.com")
     invoice_id   = payload.get("invoiceId", "unknown")
 
-    # Fix 1: idempotency — reject duplicate webhook deliveries
-    with _invoice_lock:
-        if invoice_id in _processed_invoices:
-            logger.warning("Duplicate webhook for invoice %s — ignoring", invoice_id)
-            return {"status": "duplicate", "invoice": invoice_id}
-        _processed_invoices.add(invoice_id)
+    # Idempotency — check DB first, fall back to in-memory
+    if await _check_and_mark_processed(invoice_id):
+        logger.warning("Duplicate webhook for invoice %s — ignoring", invoice_id)
+        return {"status": "duplicate", "invoice": invoice_id}
 
     logger.info(
         "InvoiceSettled — invoice=%s package=%s client=%s",

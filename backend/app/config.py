@@ -5,8 +5,9 @@ class Settings(BaseSettings):
     # Database — must be set via environment variable; no default to prevent silent misconfiguration
     database_url: str  # e.g. postgresql+asyncpg://user:pass@host:5432/dbname
 
-    # JWT
-    jwt_secret: str = "change-me-in-production"
+    # JWT — JWT_SECRET is mandatory; app will refuse to start without it.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    jwt_secret: str
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 15
     jwt_refresh_days: int = 30
