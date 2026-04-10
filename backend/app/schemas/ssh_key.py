@@ -1,0 +1,20 @@
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+
+class SshKeyCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    public_key: str = Field(min_length=20)
+
+
+class SshKeyResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    name: str
+    public_key: str
+    fingerprint: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

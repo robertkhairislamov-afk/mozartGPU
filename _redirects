@@ -1,0 +1,9 @@
+# Cloudflare Pages — redirect rules
+# Docs: https://developers.cloudflare.com/pages/configuration/redirects/
+# Format: <source> <destination> <status-code>
+
+# Pricing page shortlink → packages section on the landing page
+/pricing        /#packages      301
+
+# www → apex (Cloudflare handles this at DNS level too, but belt-and-suspenders)
+https://www.mozartgpu.com/*   https://mozartgpu.com/:splat   301

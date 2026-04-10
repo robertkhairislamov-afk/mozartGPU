@@ -1,0 +1,197 @@
+# MOZART GPU Rental — Docker Compose MVP-1
+# Services: BTCPay Server + NBXplorer + Postgres + Telegram Bot + Provision Webhook + Nginx
+# Usage:
+#   cp .env.example .env && nano .env   # fill all secrets
+#   docker compose up -d
+
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# Named volumes — persistent data survives container restarts
+# ---------------------------------------------------------------------------
+volumes:
+  postgres_data:
+  btcpay_data:
+  nbxplorer_data:
+  nginx_ssl:            # certbot will write here; nginx reads certs from here
+
+# ---------------------------------------------------------------------------
+# Internal network — all services communicate on this network.
+# Postgres is NOT exposed externally.
+# ---------------------------------------------------------------------------
+networks:
+  mozart_net:
+    driver: bridge
+
+# ---------------------------------------------------------------------------
+# Services
+# ---------------------------------------------------------------------------
+services:
+
+  # -------------------------------------------------------------------------
+  # 1. Postgres — shared database for BTCPay and NBXplorer
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: mozart_postgres
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-btcpay}
+      POSTGRES_USER:     ${POSTGRES_USER:-btcpay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Postgres is intentionally NOT exposed on the host — access via internal network only.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-btcpay}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # -------------------------------------------------------------------------
+  # 2. NBXplorer — Bitcoin/UTXO indexer required by BTCPay Server
+  # -------------------------------------------------------------------------
+  nbxplorer:
+    image: nicolasdorier/nbxplorer:2.5.11
+    container_name: mozart_nbxplorer
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NBXPLORER_NETWORK:  mainnet
+      NBXPLORER_POSTGRES: Host=postgres;Database=${POSTGRES_DB:-btcpay};Username=${POSTGRES_USER:-btcpay};Password=${POSTGRES_PASSWORD}
+      # Optional: point to a full Bitcoin node for on-chain confirmations.
+      # Leave blank to use NBXplorer's light mode (Electrum-based).
+      NBXPLORER_BTCRPCURL: ${NBXPLORER_BTCRPCURL:-}
+      NBXPLORER_BTCRPCUSER: ${NBXPLORER_BTCRPCUSER:-}
+      NBXPLORER_BTCRPCPASSWORD: ${NBXPLORER_BTCRPCPASSWORD:-}
+      NBXPLORER_BIND: 0.0.0.0:32838
+    volumes:
+      - nbxplorer_data:/datadir
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:32838/v1/cryptos/BTC/status | grep -q '\"isFullySynched\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # -------------------------------------------------------------------------
+  # 3. BTCPay Server — crypto payment processor (BTC, USDT, USDC)
+  # -------------------------------------------------------------------------
+  btcpayserver:
+    image: btcpayserver/btcpayserver:2.0.3
+    container_name: mozart_btcpay
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nbxplorer:
+        condition: service_healthy
+    ports:
+      # Bound to loopback only — nginx handles TLS termination from outside.
+      - "127.0.0.1:49392:49392"
+    environment:
+      BTCPAY_POSTGRES:     Host=postgres;Database=${POSTGRES_DB:-btcpay};Username=${POSTGRES_USER:-btcpay};Password=${POSTGRES_PASSWORD}
+      BTCPAY_EXPLORERURL:  http://nbxplorer:32838
+      BTCPAY_ROOTURI:      ${BTCPAY_ROOT_URI:-https://btcpay.mozartgpu.com}
+      BTCPAY_BIND:         0.0.0.0:49392
+      # BTCPAY_SOCKSENDPOINT: socks5://tor:9050   # uncomment to route through Tor
+    volumes:
+      - btcpay_data:/datadir
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:49392/login | grep -q 'BTCPay'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  # -------------------------------------------------------------------------
+  # 4. Telegram Bot — client communication, admin SSH delivery
+  # -------------------------------------------------------------------------
+  telegram-bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    container_name: mozart_telegram_bot
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    env_file: .env
+    environment:
+      # Explicit overrides ensure these two are always present at runtime.
+      TELEGRAM_BOT_TOKEN:     ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID}
+    # No ports needed — bot uses Telegram long-polling (outbound only).
+    healthcheck:
+      # python-telegram-bot has no HTTP endpoint; verify PID 1 is alive via /proc.
+      test: ["CMD", "python", "-c", "import os; exit(0 if os.path.exists('/proc/1/status') else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # -------------------------------------------------------------------------
+  # 5. Provision Webhook — BTCPay → vast.ai auto-provisioning (FastAPI)
+  # -------------------------------------------------------------------------
+  provision-webhook:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mozart_provision_webhook
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    depends_on:
+      btcpayserver:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8081"   # bind to loopback only — nginx proxies from outside
+    env_file: .env
+    environment:
+      VAST_API_KEY:           ${VAST_API_KEY}
+      TELEGRAM_BOT_TOKEN:     ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID}
+      BTCPAY_WEBHOOK_SECRET:  ${BTCPAY_WEBHOOK_SECRET}
+      PROVISION_WEBHOOK_PORT: ${PROVISION_WEBHOOK_PORT:-8081}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/health | grep -q 'ok'"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # -------------------------------------------------------------------------
+  # 6. Nginx — TLS termination, reverse proxy, static file serving
+  # -------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: mozart_nginx
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    depends_on:
+      btcpayserver:
+        condition: service_healthy
+      provision-webhook:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/www/html:/var/www/html:ro     # static landing page
+      - nginx_ssl:/etc/letsencrypt:ro      # certbot writes here on the host, nginx reads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health-nginx || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

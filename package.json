@@ -1,0 +1,12 @@
+{
+  "name": "mozart-gpu",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve -l 3000",
+    "flow": "npx agent-flow-app --port 3001",
+    "start": "npx serve -l 3000 & npx agent-flow-app --port 3001"
+  },
+  "devDependencies": {
+    "sharp-cli": "^5.2.0"
+  }
+}

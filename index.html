@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOZART | GPU Computing On Demand</title>
+  <meta name="description" content="MOZART — rent high-performance GPUs by the hour. AI, ML, rendering and more.">
+  <meta property="og:title" content="MOZART | GPU Computing On Demand">
+  <meta property="og:description" content="Rent NVIDIA H100, A100, L40S, RTX 4090 GPUs by the hour. Instant deployment, transparent pricing, enterprise-grade hardware.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/img/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MOZART | GPU Computing On Demand">
+  <meta name="twitter:description" content="Enterprise GPUs on demand. Pay per hour, scale instantly, no contracts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "MOZART GPU",
+    "description": "Enterprise GPU rental platform. Rent NVIDIA H100, A100, L40S, RTX 4090 by the hour.",
+    "url": "https://mozartgpu.com",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "Sales",
+      "email": "hello@mozartgpu.com"
+    },
+    "sameAs": []
+  }
+  </script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <!-- ===== Loading Screen ===== -->
+  <div class="loader">
+    <div class="loader-logo">
+      <svg width="65" height="65" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+        <rect x="15" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+        <rect x="28" y="32" width="8" height="28" rx="4" fill="currentColor"/>
+        <rect x="41" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+        <rect x="54" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+      </svg>
+    </div>
+    <span class="loader-progress p3-mono">0%</span>
+  </div>
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="Home" style="display:flex;align-items:center;gap:8px;width:auto;">
+        <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+          <rect x="2" y="8" width="8" height="52" rx="4" fill="#D4A843"/>
+          <rect x="15" y="22" width="8" height="38" rx="4" fill="#D4A843"/>
+          <rect x="28" y="32" width="8" height="28" rx="4" fill="#D4A843"/>
+          <rect x="41" y="22" width="8" height="38" rx="4" fill="#D4A843"/>
+          <rect x="54" y="8" width="8" height="52" rx="4" fill="#D4A843"/>
+        </svg>
+        <span style="font-weight:800;font-size:16px;letter-spacing:0.15em;color:#D4A843;font-family:'JetBrains Mono',monospace">MOZART</span>
+      </a>
+
+      <nav class="nav-desktop">
+        <ul style="display:flex;align-items:center;">
+          <li>
+            <a href="#ethos" class="nav-link">
+              <span class="nav-link-dot"></span>
+              <span class="nav-link-text p2-mono">WHY US</span>
+            </a>
+          </li>
+          <li>
+            <a href="#portfolio" class="nav-link">
+              <span class="nav-link-dot"></span>
+              <span class="nav-link-text p2-mono">SOLUTIONS</span>
+            </a>
+          </li>
+          <li>
+            <a href="#pricing" class="nav-link">
+              <span class="nav-link-dot"></span>
+              <span class="nav-link-text p2-mono">PRICING</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-open-contact>
+              <span class="nav-link-dot"></span>
+              <span class="nav-link-text p2-mono">CONTACT</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="ru">RU</button>
+      </div>
+
+      <button class="mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span class="mobile-toggle-dot"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Mobile Menu ===== -->
+  <div class="mobile-menu">
+    <ul class="mobile-menu-list">
+      <li class="mobile-menu-item"><a href="#ethos" class="p3-mono">WHY US</a></li>
+      <li class="mobile-menu-item"><a href="#portfolio" class="p3-mono">SOLUTIONS</a></li>
+      <li class="mobile-menu-item"><a href="#pricing" class="p3-mono">PRICING</a></li>
+      <li class="mobile-menu-item full-width"><a href="#" class="p3-mono" data-open-contact>CONTACT</a></li>
+      <li class="mobile-menu-item mobile-menu-lang">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="ru">RU</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ===== Hero Section ===== -->
+  <section class="hero" id="hero">
+    <div class="hero-canvas"></div>
+    <div class="container hero-content">
+      <div style="display:none" class="hidden-spacer"></div>
+      <div class="hero-title-wrapper">
+        <h1 class="h2 hero-title">
+          GPU Cloud.<br>
+          No KYC.<br>
+          Pay with Crypto.
+        </h1>
+      </div>
+
+      <div class="hero-bottom p3-mono" style="color:rgba(245,245,245,0.6)">
+        <div class="hero-bottom-border">
+          <div class="hero-bottom-left">
+            <button class="btn btn-cornered btn-dark" data-open-contact>
+              <span class="btn-dot"></span>
+              <span class="btn-text-wrapper p2-mono">
+                <span class="btn-text">Rent GPU Now</span>
+                <span class="btn-text-clone" aria-hidden="true">Rent GPU Now</span>
+              </span>
+            </button>
+            <p class="hero-price p3-mono" style="margin-top:12px;opacity:0.6">From $0.45/hr. Pay with BTC, USDT, USDC. No KYC.</p>
+            <svg class="hero-emblem" style="display:block" width="65" height="65" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+              <rect x="15" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="28" y="32" width="8" height="28" rx="4" fill="currentColor"/>
+              <rect x="41" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="54" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="hero-bottom-right">
+            <p class="hero-description" style="max-width:490px">
+              Rent NVIDIA H100, A100, RTX 4090 by the hour. Pay with BTC, USDT, or USDC. No identity verification. SSH access in minutes.
+            </p>
+            <svg class="hero-emblem" style="display:none" width="65" height="65" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+              <rect x="15" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="28" y="32" width="8" height="28" rx="4" fill="currentColor"/>
+              <rect x="41" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="54" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Ethos Section ===== -->
+  <section class="ethos" id="ethos">
+    <div class="container">
+      <div class="ethos-header">
+        <div>
+          <h2 class="p2-mono" style="margin-bottom:12px">Our approach</h2>
+          <p class="h5 uppercase">Raw Power.<br>Zero Friction.</p>
+        </div>
+        <div>
+          <p class="p1" style="border-top:1px solid rgba(17,17,17,0.2);padding-top:20px;margin-bottom:24px">
+            We provide instant access to the world's most powerful GPUs. No long-term contracts. No complex setup. Just raw computing power, ready when you need it, billed by the hour.
+          </p>
+          <button class="btn btn-cornered btn-dark" data-open-contact>
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Start Computing</span>
+              <span class="btn-text-clone" aria-hidden="true">Start Computing</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <ul class="ethos-cards reveal">
+        <li class="ethos-card">
+          <div class="ethos-card-inner ethos-card-1">
+            <picture>
+              <source srcset="img/ethos-1-deploy.webp" type="image/webp">
+              <img class="ethos-bg" src="img/ethos-1-deploy.png" width="2752" height="1536" alt="GPU instant deployment" loading="eager" fetchpriority="high">
+            </picture>
+            <div class="ethos-card-content">
+              <h3 class="h5 uppercase">Instant Deploy</h3>
+              <div class="p2-mono" style="display:flex;flex-direction:column;gap:15px">
+                <p>01 / 04</p>
+                <p>Launch a GPU instance in under 60 seconds. Pre-configured environments for PyTorch, TensorFlow, and more. No DevOps required.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="ethos-card">
+          <div class="ethos-card-inner ethos-card-2">
+            <picture>
+              <source srcset="img/ethos-2-billing.webp" type="image/webp">
+              <img class="ethos-bg" src="img/ethos-2-billing.png" width="2752" height="1536" alt="GPU hourly billing dashboard" loading="eager" fetchpriority="high">
+            </picture>
+            <div class="ethos-card-content">
+              <h3 class="h5 uppercase">Pay Per Hour</h3>
+              <div class="p2-mono" style="display:flex;flex-direction:column;gap:15px">
+                <p>02 / 04</p>
+                <p>No upfront costs, no monthly minimums. Pay only for the GPU hours you consume. Transparent pricing with no hidden fees.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="ethos-card">
+          <div class="ethos-card-inner ethos-card-3">
+            <picture>
+              <source srcset="img/ethos-3-enterprise.webp" type="image/webp">
+              <img class="ethos-bg" src="img/ethos-3-enterprise.png" width="2752" height="1536" alt="Enterprise GPU server rack" loading="lazy">
+            </picture>
+            <div class="ethos-card-content">
+              <h3 class="h5 uppercase">Enterprise GPUs</h3>
+              <div class="p2-mono" style="display:flex;flex-direction:column;gap:15px">
+                <p>03 / 04</p>
+                <p>Access NVIDIA H100, A100, L40S, RTX 4090 and more. Data center grade hardware with ECC memory and NVLink interconnects.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="ethos-card">
+          <div class="ethos-card-inner ethos-card-4">
+            <picture>
+              <source srcset="img/ethos-4-scale.webp" type="image/webp">
+              <img class="ethos-bg" src="img/ethos-4-scale.png" width="2752" height="1536" alt="Scalable GPU data center" loading="lazy">
+            </picture>
+            <div class="ethos-card-content">
+              <h3 class="h5 uppercase">Scale Freely</h3>
+              <div class="p2-mono" style="display:flex;flex-direction:column;gap:15px">
+                <p>04 / 04</p>
+                <p>From a single GPU to multi-node clusters. Scale your workloads up or down instantly based on demand. True elastic computing.</p>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== How It Works Section ===== -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <div class="hiw-header reveal">
+        <span class="p2-mono">How It Works</span>
+        <h2 class="h4 uppercase">Three Steps to GPU Power</h2>
+        <p class="p1" style="max-width:500px;opacity:0.7">From zero to running GPU in under 60 seconds.</p>
+      </div>
+      <div class="hiw-steps reveal">
+        <div class="hiw-step">
+          <span class="hiw-number h2">01</span>
+          <h3 class="h6 uppercase">Choose GPU &amp; Package</h3>
+          <p class="p2-mono">Pick your GPU — from RTX 4090 to H100. Select a prepaid hour package. No account required.</p>
+        </div>
+        <div class="hiw-step">
+          <span class="hiw-number h2">02</span>
+          <h3 class="h6 uppercase">Pay with Crypto</h3>
+          <p class="p2-mono">Send BTC, USDT, or USDC. Payment confirms in minutes. No KYC, no bank account, no delays.</p>
+        </div>
+        <div class="hiw-step">
+          <span class="hiw-number h2">03</span>
+          <h3 class="h6 uppercase">Get SSH Access</h3>
+          <p class="p2-mono">Receive your GPU credentials via Telegram. Pre-installed CUDA, PyTorch, TensorFlow. Start computing immediately.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Social Proof Section ===== -->
+  <section class="social-proof">
+    <div class="container">
+      <div class="sp-stats reveal">
+        <div class="sp-stat">
+          <div class="sp-value">
+            <span class="sp-number h2" data-target="5">0</span>
+          </div>
+          <span class="sp-label p2-mono">GPU Models</span>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-value">
+            <span class="sp-number h2" data-target="3">0</span>
+          </div>
+          <span class="sp-label p2-mono">Payment Methods</span>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-value">
+            <span class="sp-number h2" data-target="24">0</span><span class="sp-plus h2">/7</span>
+          </div>
+          <span class="sp-label p2-mono">Telegram Support</span>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-value">
+            <span class="sp-number h2" data-target="15">0</span><span class="sp-plus h2"> min</span>
+          </div>
+          <span class="sp-label p2-mono">Time to SSH</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Focus Section ===== -->
+  <section class="focus" style="background:var(--neural-fog);color:var(--rich-carbon)">
+    <div class="container">
+      <div class="focus-content reveal">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h2 class="p1-mono">Our GPU Fleet</h2>
+          <h3 class="h2 uppercase">Top-tier hardware. Unlimited potential.</h3>
+        </div>
+        <p class="p1" style="max-width:550px;opacity:0.7">
+          AI training, inference, rendering, simulation, scientific research. Whatever your workload demands, we have the GPU power to match. Enterprise hardware, cloud flexibility.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Industries Section ===== -->
+  <section class="industries" id="industries">
+    <canvas class="industries-canvas"></canvas>
+    <div class="container reveal">
+      <div class="industries-list">
+        <div class="industry-item">
+          <span class="industry-title h4">AI / ML Training</span>
+          <div class="industry-description"><p class="p2">Train large language models, computer vision systems, and deep learning networks at scale.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">AI Inference</span>
+          <div class="industry-description"><p class="p2">Deploy and serve AI models with low latency and high throughput for production workloads.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">LLM Fine-tuning</span>
+          <div class="industry-description"><p class="p2">Fine-tune open-source language models with LoRA, QLoRA, and full fine-tuning on high-VRAM GPUs.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">Scientific Computing</span>
+          <div class="industry-description"><p class="p2">Run molecular dynamics, climate modeling, and physics simulations on powerful GPU arrays.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">AI Agents</span>
+          <div class="industry-description"><p class="p2">Deploy autonomous AI agents with persistent GPU instances for continuous learning and real-time decision making.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">Bittensor &amp; DePIN</span>
+          <div class="industry-description"><p class="p2">Run Bittensor subnet miners, DePIN nodes, and decentralized AI workloads with crypto-native GPU infrastructure.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">ZK Proofs</span>
+          <div class="industry-description"><p class="p2">Generate zero-knowledge proofs for zkSync, StarkNet, Polygon zkEVM, and Scroll with dedicated GPU compute.</p></div>
+        </div>
+        <div class="industry-item">
+          <span class="industry-title h4">Batch Processing</span>
+          <div class="industry-description"><p class="p2">Process large-scale data workloads efficiently with GPU-accelerated batch computing pipelines.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Developer Experience Section ===== -->
+  <section class="dev-experience" id="developers">
+    <div class="container">
+      <div class="dev-header reveal">
+        <span class="p2-mono">Developer Experience</span>
+        <h2 class="h4 uppercase">Built for Developers</h2>
+        <p class="p1" style="max-width:500px;opacity:0.7">CLI, Python SDK, REST API. Your workflow, your way.</p>
+      </div>
+      <div class="dev-content reveal">
+        <div class="dev-tabs">
+          <button class="dev-tab active p2-mono" data-tab="cli">CLI</button>
+          <button class="dev-tab p2-mono" data-tab="python">Python SDK</button>
+          <button class="dev-tab p2-mono" data-tab="api">REST API</button>
+        </div>
+        <div class="dev-code-wrapper">
+          <pre class="dev-code active" data-tab="cli"><code><span class="code-comment"># Install MOZART CLI</span>
+<span class="code-cmd">$</span> pip install mozart-gpu
+<span class="code-cmd">$</span> mozart login
+<span class="code-cmd">$</span> mozart search --gpu H100 --region eu-west
+<span class="code-cmd">$</span> mozart create --gpu H100 --image pytorch:2.3 --disk 100
+<span class="code-output">&gt; Instance ready: ssh root@185.x.x.x -p 22</span></code></pre>
+          <pre class="dev-code" data-tab="python"><code><span class="code-keyword">from</span> mozart <span class="code-keyword">import</span> MozartClient
+
+client = MozartClient(api_key=<span class="code-string">"your-key"</span>)
+
+instance = client.create(
+    gpu=<span class="code-string">"H100"</span>,
+    image=<span class="code-string">"pytorch:2.3"</span>,
+    disk_gb=<span class="code-number">100</span>,
+    region=<span class="code-string">"eu-west"</span>
+)
+
+<span class="code-keyword">print</span>(f<span class="code-string">"SSH: {instance.ssh_command}"</span>)</code></pre>
+          <pre class="dev-code" data-tab="api"><code><span class="code-cmd">$</span> curl -X POST https://api.mozartgpu.com/v1/instances \
+  -H <span class="code-string">"Authorization: Bearer YOUR_API_KEY"</span> \
+  -H <span class="code-string">"Content-Type: application/json"</span> \
+  -d <span class="code-string">'{
+    "gpu": "H100",
+    "image": "pytorch:2.3",
+    "disk_gb": 100,
+    "region": "eu-west"
+  }'</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Portfolio / GPU Catalog Section ===== -->
+  <section class="portfolio" id="portfolio">
+    <div class="container">
+      <div class="portfolio-header reveal">
+        <h2 class="p1-mono">Available GPUs</h2>
+        <p class="h5 uppercase" style="margin-bottom:24px;text-wrap:balance">
+          Enterprise hardware. Cloud prices. Instant access.
+        </p>
+        <a href="#pricing" class="btn btn-cornered btn-light">
+          <span class="btn-dot"></span>
+          <span class="btn-text-wrapper p2-mono">
+            <span class="btn-text">View pricing</span>
+            <span class="btn-text-clone" aria-hidden="true">View pricing</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="portfolio-slider">
+        <div class="portfolio-slide">
+          <picture>
+            <source srcset="img/gpu-h100.webp" type="image/webp">
+            <img class="gpu-card-img" src="img/gpu-h100.png" width="2752" height="1536" alt="NVIDIA H100" loading="lazy">
+          </picture>
+          <h3 class="h6 uppercase">NVIDIA H100</h3>
+          <div class="gpu-price">$2.50<span>/hr</span></div>
+          <div class="gpu-specs">
+            <span>80GB HBM3</span>
+            <span>3.35 TB/s</span>
+            <span>990 TFLOPS</span>
+          </div>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Rent Now</span>
+              <span class="btn-text-clone" aria-hidden="true">Rent Now</span>
+            </span>
+          </a>
+        </div>
+        <div class="portfolio-slide">
+          <picture>
+            <source srcset="img/gpu-a100.webp" type="image/webp">
+            <img class="gpu-card-img" src="img/gpu-a100.png" width="2752" height="1536" alt="NVIDIA A100" loading="lazy">
+          </picture>
+          <h3 class="h6 uppercase">NVIDIA A100</h3>
+          <div class="gpu-price">$1.80<span>/hr</span></div>
+          <div class="gpu-specs">
+            <span>80GB HBM2e</span>
+            <span>2.0 TB/s</span>
+            <span>312 TFLOPS</span>
+          </div>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Rent Now</span>
+              <span class="btn-text-clone" aria-hidden="true">Rent Now</span>
+            </span>
+          </a>
+        </div>
+        <div class="portfolio-slide active">
+          <picture>
+            <source srcset="img/gpu-l40s.webp" type="image/webp">
+            <img class="gpu-card-img" src="img/gpu-l40s.png" width="2752" height="1536" alt="NVIDIA L40S" loading="lazy">
+          </picture>
+          <h3 class="h6 uppercase">NVIDIA L40S</h3>
+          <div class="gpu-price">$1.20<span>/hr</span></div>
+          <div class="gpu-specs">
+            <span>48GB GDDR6X</span>
+            <span>864 GB/s</span>
+            <span>362 TFLOPS</span>
+          </div>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Rent Now</span>
+              <span class="btn-text-clone" aria-hidden="true">Rent Now</span>
+            </span>
+          </a>
+        </div>
+        <div class="portfolio-slide">
+          <picture>
+            <source srcset="img/gpu-4090.webp" type="image/webp">
+            <img class="gpu-card-img" src="img/gpu-4090.png" width="2752" height="1536" alt="RTX 4090" loading="lazy">
+          </picture>
+          <h3 class="h6 uppercase">RTX 4090</h3>
+          <div class="gpu-price">$0.80<span>/hr</span></div>
+          <div class="gpu-specs">
+            <span>24GB GDDR6X</span>
+            <span>1.0 TB/s</span>
+            <span>165 TFLOPS FP32</span>
+          </div>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Rent Now</span>
+              <span class="btn-text-clone" aria-hidden="true">Rent Now</span>
+            </span>
+          </a>
+        </div>
+        <div class="portfolio-slide">
+          <picture>
+            <source srcset="img/gpu-3090.webp" type="image/webp">
+            <img class="gpu-card-img" src="img/gpu-3090.png" width="2752" height="1536" alt="RTX 3090" loading="lazy">
+          </picture>
+          <h3 class="h6 uppercase">RTX 3090</h3>
+          <div class="gpu-price">$0.45<span>/hr</span></div>
+          <div class="gpu-specs">
+            <span>24GB GDDR6X</span>
+            <span>936 GB/s</span>
+            <span>142 TFLOPS</span>
+          </div>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Rent Now</span>
+              <span class="btn-text-clone" aria-hidden="true">Rent Now</span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="portfolio-nav">
+        <button class="portfolio-nav-btn portfolio-prev" aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M10.08 13H8.02L4 9.02 8.02 5h2.06L8.38 6.7 6.57 8.38l2.51-.08H14v1.45H9.08l-2.5-.08L8.43 11.37 10.08 13z" fill="currentColor"/></svg>
+        </button>
+        <span class="p2-mono"><span class="portfolio-counter">03</span> / 05</span>
+        <button class="portfolio-nav-btn portfolio-next" aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7.92 13h2.06L14 9.02 9.98 5H7.92l1.7 1.7 1.81 1.68-2.51-.08H4v1.45h4.92l2.5-.08-1.85 1.7L7.92 13z" fill="currentColor"/></svg>
+        </button>
+      </div>
+
+      <div class="pricing-table-wrap reveal" style="margin-top:60px">
+        <h3 class="h6 uppercase" style="margin-bottom:24px;text-align:center">Compare All GPUs</h3>
+        <div class="pricing-table-scroll">
+          <table class="pricing-table">
+            <thead>
+              <tr>
+                <th class="p2-mono">GPU</th>
+                <th class="p2-mono">VRAM</th>
+                <th class="p2-mono">Bandwidth</th>
+                <th class="p2-mono">TFLOPS</th>
+                <th class="p2-mono">Price/hr</th>
+                <th class="p2-mono">Best For</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="pricing-row-featured">
+                <td class="p2-mono"><strong>H100 SXM</strong></td>
+                <td class="p3-mono">80 GB HBM3</td>
+                <td class="p3-mono">3.35 TB/s</td>
+                <td class="p3-mono">990</td>
+                <td class="p2-mono"><strong>$2.50</strong></td>
+                <td class="p3-mono">LLM training, HPC</td>
+              </tr>
+              <tr>
+                <td class="p2-mono"><strong>A100 SXM</strong></td>
+                <td class="p3-mono">80 GB HBM2e</td>
+                <td class="p3-mono">2.0 TB/s</td>
+                <td class="p3-mono">312</td>
+                <td class="p2-mono"><strong>$1.80</strong></td>
+                <td class="p3-mono">ML training, inference</td>
+              </tr>
+              <tr>
+                <td class="p2-mono"><strong>L40S</strong></td>
+                <td class="p3-mono">48 GB GDDR6X</td>
+                <td class="p3-mono">864 GB/s</td>
+                <td class="p3-mono">362</td>
+                <td class="p2-mono"><strong>$1.20</strong></td>
+                <td class="p3-mono">Inference, rendering</td>
+              </tr>
+              <tr>
+                <td class="p2-mono"><strong>RTX 4090</strong></td>
+                <td class="p3-mono">24 GB GDDR6X</td>
+                <td class="p3-mono">1.0 TB/s</td>
+                <td class="p3-mono">165</td>
+                <td class="p2-mono"><strong>$0.80</strong></td>
+                <td class="p3-mono">Fine-tuning, dev</td>
+              </tr>
+              <tr>
+                <td class="p2-mono"><strong>RTX 3090</strong></td>
+                <td class="p3-mono">24 GB GDDR6X</td>
+                <td class="p3-mono">936 GB/s</td>
+                <td class="p3-mono">142</td>
+                <td class="p2-mono"><strong>$0.45</strong></td>
+                <td class="p3-mono">Budget ML, rendering</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="p3-mono" style="text-align:center;opacity:0.5;margin-top:16px">Volume discounts available. Contact sales for enterprise pricing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Pricing Packages ===== -->
+  <section class="pricing-section" id="packages" style="background:var(--neural-fog);color:var(--rich-carbon);padding:120px 0">
+    <div class="container">
+      <div class="reveal" style="margin-bottom:16px">
+        <span class="p2-mono">Pricing</span>
+        <h2 class="h4 uppercase">Prepaid GPU Packages</h2>
+        <p class="p1" style="max-width:500px;opacity:0.7;margin-top:12px">Buy hours upfront. No subscription. No commitment. Pay with crypto.</p>
+      </div>
+
+      <div class="pricing-packages reveal">
+        <div class="pricing-package">
+          <h3 class="h6 uppercase">RTX 4090 Starter</h3>
+          <p class="p3-mono">24GB GDDR6X</p>
+          <div class="pricing-package-price">$8</div>
+          <p class="pricing-package-rate p3-mono">10 hours · $0.80/hr</p>
+          <ul class="pricing-package-features p3-mono">
+            <li>SSH access in 15 min</li>
+            <li>CUDA 12.4 pre-installed</li>
+            <li>50 GB storage included</li>
+          </ul>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Pay with Crypto</span>
+              <span class="btn-text-clone" aria-hidden="true">Pay with Crypto</span>
+            </span>
+          </a>
+        </div>
+
+        <div class="pricing-package pricing-package-featured">
+          <h3 class="h6 uppercase">A100 Pro</h3>
+          <p class="p3-mono">80GB HBM2e</p>
+          <div class="pricing-package-price">$80</div>
+          <p class="pricing-package-rate p3-mono">50 hours · $1.60/hr</p>
+          <ul class="pricing-package-features p3-mono">
+            <li>SSH access in 15 min</li>
+            <li>PyTorch / TensorFlow ready</li>
+            <li>100 GB storage included</li>
+            <li>Save 11% vs hourly</li>
+          </ul>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Pay with Crypto</span>
+              <span class="btn-text-clone" aria-hidden="true">Pay with Crypto</span>
+            </span>
+          </a>
+        </div>
+
+        <div class="pricing-package">
+          <h3 class="h6 uppercase">H100 Enterprise</h3>
+          <p class="p3-mono">80GB HBM3</p>
+          <div class="pricing-package-price">$110</div>
+          <p class="pricing-package-rate p3-mono">50 hours · $2.20/hr</p>
+          <ul class="pricing-package-features p3-mono">
+            <li>SSH access in 15 min</li>
+            <li>vLLM / CUDA 12.4</li>
+            <li>200 GB storage included</li>
+            <li>Save 12% vs hourly</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Pay with Crypto</span>
+              <span class="btn-text-clone" aria-hidden="true">Pay with Crypto</span>
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <div class="crypto-badges reveal" style="margin-top:32px">
+        <div class="crypto-badge p3-mono">₿ Bitcoin</div>
+        <div class="crypto-badge p3-mono">₮ USDT</div>
+        <div class="crypto-badge p3-mono">◈ USDC</div>
+      </div>
+      <p class="p3-mono" style="text-align:center;opacity:0.4;margin-top:16px">Powered by BTCPay Server · Self-custodial · No intermediaries</p>
+    </div>
+  </section>
+
+  <!-- ===== Pricing / For Users Section ===== -->
+  <section class="investors-founders" id="pricing">
+    <div class="if-canvas"></div>
+    <div class="if-section">
+      <div class="container">
+        <div class="if-grid">
+          <div class="if-sticky">
+            <div class="if-sticky-header">
+              <h2 class="p2-mono">For Developers</h2>
+              <p class="h4 uppercase">Scale your compute. Not your costs.</p>
+            </div>
+            <p class="if-sticky-desc p2-mono">
+              Whether you need a single GPU for a few hours or a cluster for weeks, our flexible pricing adapts to your workload.
+            </p>
+            <button class="btn btn-cornered btn-light" data-open-contact>
+              <span class="btn-dot"></span>
+              <span class="btn-text-wrapper p2-mono">
+                <span class="btn-text">Start now</span>
+                <span class="btn-text-clone" aria-hidden="true">Start now</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="if-cards reveal">
+            <div class="if-card if-card-teal">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:360px">Instant availability</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">01</p>
+                <p class="p1">Launch GPU instances in seconds. Pre-installed CUDA, cuDNN, and popular ML frameworks ready to go.</p>
+              </div>
+            </div>
+            <div class="if-card if-card-red">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:360px">Transparent pricing</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="7" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">02</p>
+                <p class="p1">Per-hour billing with no hidden costs. Volume discounts for sustained usage. Save up to 40% with reserved instances.</p>
+              </div>
+            </div>
+            <div class="if-card if-card-white">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:360px">Global infrastructure</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">03</p>
+                <p class="p1">Data centers across multiple regions. Low-latency access wherever your team or users are located.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- For Enterprise -->
+    <div class="if-section" style="padding-top:0">
+      <div class="container">
+        <div class="if-grid">
+          <div class="if-cards if-cards-right reveal">
+            <div class="if-card if-card-teal">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:450px">Dedicated clusters on demand</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">01</p>
+                <p class="p1">Custom multi-GPU and multi-node configurations tailored to your specific workload requirements.</p>
+              </div>
+            </div>
+            <div class="if-card if-card-red">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:450px">Enterprise SLA & Support</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">02</p>
+                <p class="p1">99.9% uptime guarantee. Dedicated support team. Priority hardware allocation and maintenance windows.</p>
+              </div>
+            </div>
+            <div class="if-card if-card-white">
+              <div class="if-card-top">
+                <h3 class="h6 uppercase" style="max-width:450px">Secure & Compliant</h3>
+                <div class="if-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg></div>
+              </div>
+              <div class="if-card-bottom">
+                <p class="if-card-number p1-mono">03</p>
+                <p class="p1">Isolated environments. End-to-end encryption. Enterprise-grade security with data residency options.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="if-sticky if-sticky-right" style="order:2">
+            <div class="if-sticky-header">
+              <h2 class="p2-mono">For Enterprise</h2>
+              <p class="h4 uppercase">Dedicated power. Zero compromise.</p>
+            </div>
+            <p class="if-sticky-desc p2-mono">
+              Custom GPU clusters, priority support, and enterprise-grade security for teams that demand the best.
+            </p>
+            <button class="btn btn-cornered btn-light" data-open-contact>
+              <span class="btn-dot"></span>
+              <span class="btn-text-wrapper p2-mono">
+                <span class="btn-text">Contact sales</span>
+                <span class="btn-text-clone" aria-hidden="true">Contact sales</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Partners Section ===== -->
+  <section class="partners-section">
+    <div class="container">
+      <div class="partners-grid">
+        <div class="partners-left reveal">
+          <div class="if-sticky-header">
+            <h2 class="p2-mono">Technology Stack</h2>
+            <h3 class="h5 uppercase">Built on industry standards.</h3>
+          </div>
+          <p class="p1-mono" style="color:rgba(245,245,245,0.6)">
+            Our infrastructure runs on industry-leading hardware and open-source software trusted by millions of developers worldwide.
+          </p>
+          <button class="btn btn-cornered btn-light" data-open-contact>
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Learn more</span>
+              <span class="btn-text-clone" aria-hidden="true">Learn more</span>
+            </span>
+          </button>
+        </div>
+        <div class="partners-right">
+          <div class="partners-logos">
+            <div class="partner-logo">
+              <svg viewBox="0 0 120 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="3">NVIDIA</text></svg>
+              <span class="partner-label p3-mono">GPU Hardware</span>
+            </div>
+            <div class="partner-logo">
+              <svg viewBox="0 0 80 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="2">AMD</text></svg>
+              <span class="partner-label p3-mono">CPU Platform</span>
+            </div>
+            <div class="partner-logo">
+              <svg viewBox="0 0 100 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="2">CUDA</text></svg>
+              <span class="partner-label p3-mono">Compute SDK</span>
+            </div>
+            <div class="partner-logo">
+              <svg viewBox="0 0 120 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="2">Docker</text></svg>
+              <span class="partner-label p3-mono">Containers</span>
+            </div>
+            <div class="partner-logo">
+              <svg viewBox="0 0 160 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="2">Kubernetes</text></svg>
+              <span class="partner-label p3-mono">Orchestration</span>
+            </div>
+            <div class="partner-logo">
+              <svg viewBox="0 0 130 30" fill="currentColor"><text x="0" y="22" font-size="18" font-weight="900" font-family="Arial,sans-serif" letter-spacing="2">PyTorch</text></svg>
+              <span class="partner-label p3-mono">ML Framework</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ Section ===== -->
+  <section class="faq-section" id="faq">
+    <div class="container">
+      <div class="faq-header reveal">
+        <span class="p2-mono">FAQ</span>
+        <h2 class="h4 uppercase">Questions &amp; Answers</h2>
+      </div>
+      <div class="faq-list reveal">
+        <div class="faq-item">
+          <button class="faq-question p1-mono">What crypto do you accept?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">We accept BTC, USDT (TRC-20), and USDC (ERC-20/TRC-20) via BTCPay Server. Payment confirms in 1-30 minutes depending on the network.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">Do you require KYC?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">No. We do not require identity verification, government ID, or bank account linking. Rent GPUs pseudonymously with crypto.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">How fast can I get a GPU?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">You'll receive SSH credentials within 15 minutes of confirmed crypto payment. Automated sub-60s provisioning coming soon.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">Do I need a credit card?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">No credit card, no bank account needed. Pay with BTC, USDT, or USDC. No KYC or identity verification required.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">What software is pre-installed?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">All instances come with CUDA, cuDNN, and your choice of PyTorch, TensorFlow, or JAX. Custom Docker images are also supported.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">Can I scale to multiple GPUs?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">Yes. Request multi-GPU instances (up to 8x per node) or multi-node clusters for distributed training.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">What happens if a GPU fails?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">We monitor all instances. If a failure occurs, we manually migrate your workload and credit the downtime to your account.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">Is my data secure?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">All instances run in isolated Docker containers. Your data is accessible only via your SSH key. SOC 2 certification planned for Q3 2026.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question p1-mono">Do you offer volume discounts?<span class="faq-icon">+</span></button>
+          <div class="faq-answer"><p class="p2-mono">Yes. Prepaid hour packages offer 10-15% savings. For 100+ GPU-hours per week, contact us on Telegram for custom pricing.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Trust Section ===== -->
+  <section class="trust-section">
+    <div class="container">
+      <div class="trust-badges reveal">
+        <div class="trust-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span class="p3-mono">Isolated Containers</span>
+        </div>
+        <div class="trust-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="p3-mono">Zero KYC Required</span>
+        </div>
+        <div class="trust-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+          <span class="p3-mono">BTC / USDT / USDC Accepted</span>
+        </div>
+        <div class="trust-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="p3-mono">24/7 Telegram Support</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer" id="footer">
+    <div class="container" style="padding:0 !important">
+      <div class="footer-grid">
+        <div class="footer-canvas"></div>
+        <div class="footer-content">
+          <div class="footer-cta">
+            <h2 class="h6 uppercase">Power your next project.</h2>
+            <p class="p2-mono" style="margin-bottom:auto">
+              GPU by the hour. Crypto payments. No KYC. Start building today.
+            </p>
+            <div style="margin-top:18px;width:100%;max-width:200px">
+              <button class="btn btn-cornered btn-dark" style="width:100%" data-open-contact>
+                <span class="btn-dot"></span>
+                <span class="btn-text-wrapper p2-mono">
+                  <span class="btn-text">Rent GPU Now</span>
+                  <span class="btn-text-clone" aria-hidden="true">Rent GPU Now</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="footer-emblem">
+            <svg width="65" height="65" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+              <rect x="15" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="28" y="32" width="8" height="28" rx="4" fill="currentColor"/>
+              <rect x="41" y="22" width="8" height="38" rx="4" fill="currentColor"/>
+              <rect x="54" y="8" width="8" height="52" rx="4" fill="currentColor"/>
+            </svg>
+          </div>
+
+          <nav class="footer-nav" style="order:1;grid-column:span 2">
+            <div class="footer-columns">
+              <div class="footer-col">
+                <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">PRODUCT</h4>
+                <ul>
+                  <li><a href="#portfolio" class="footer-link p2-mono">GPU Catalog</a></li>
+                  <li><a href="#pricing" class="footer-link p2-mono">Pricing</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Enterprise</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Status Page</a></li>
+                </ul>
+              </div>
+              <div class="footer-col">
+                <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">DEVELOPERS</h4>
+                <ul>
+                  <li><a href="#developers" class="footer-link p2-mono">Documentation</a></li>
+                  <li><a href="#" class="footer-link p2-mono">API Reference</a></li>
+                  <li><a href="#" class="footer-link p2-mono">CLI Guide</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Python SDK</a></li>
+                </ul>
+              </div>
+              <div class="footer-col">
+                <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">COMPANY</h4>
+                <ul>
+                  <li><a href="#" class="footer-link p2-mono">About</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Blog</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Careers</a></li>
+                  <li><a href="#" class="footer-link p2-mono">Contact</a></li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+
+          <div style="order:3;display:flex;flex-direction:column;gap:40px;grid-column:span 2">
+            <div class="footer-legal p2-mono">
+              <a href="#privacy" onclick="event.preventDefault(); alert('Privacy Policy — Coming Soon')">Privacy Policy</a>
+              <a href="#terms" onclick="event.preventDefault(); alert('Terms and Conditions — Coming Soon')">Terms and Conditions</a>
+              <a href="#cookies" onclick="event.preventDefault(); alert('Cookie Policy — Coming Soon')">Cookie Policy</a>
+            </div>
+            <div class="footer-copyright p3-mono">
+              <p>Copyright &copy; 2026 MOZART GPU</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== Contact Modal ===== -->
+  <div class="modal-overlay">
+    <div class="modal-panel" style="position:relative">
+      <button class="modal-close-btn" aria-label="Close" style="position:absolute;top:8px;right:8px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:rgba(17,17,17,0.6)">
+        <svg width="17" height="18" viewBox="0 0 17 18" fill="none"><path d="M1 1l15 16M16 1L1 17" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <div style="display:flex;flex-direction:column;gap:32px">
+        <h2 class="h3 uppercase">Get in touch.</h2>
+        <div style="text-align:center;padding:20px 0;border-bottom:1px solid rgba(17,17,17,0.1);margin-bottom:20px">
+          <p class="p1-mono" style="margin-bottom:12px">Fastest way to get started:</p>
+          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark" style="display:inline-flex">
+            <span class="btn-dot"></span>
+            <span class="btn-text-wrapper p2-mono">
+              <span class="btn-text">Chat on Telegram</span>
+              <span class="btn-text-clone" aria-hidden="true">Chat on Telegram</span>
+            </span>
+          </a>
+        </div>
+        <form style="display:flex;flex-direction:column;gap:20px" onsubmit="event.preventDefault();alert('Thank you! We will contact you soon.')">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label p3-mono" for="firstName">First name *</label>
+              <input id="firstName" type="text" class="form-input" placeholder="First name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label p3-mono" for="lastName">Last name *</label>
+              <input id="lastName" type="text" class="form-input" placeholder="Last name" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label p3-mono" for="email">Email *</label>
+              <input id="email" type="email" class="form-input" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label p3-mono" for="company">Company</label>
+              <input id="company" type="text" class="form-input" placeholder="Company name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label p3-mono">What GPU do you need?</label>
+            <div class="form-radio-group">
+              <label class="form-radio p3-mono"><input type="radio" name="gpu" value="H100" class="sr-only"> H100</label>
+              <label class="form-radio p3-mono"><input type="radio" name="gpu" value="A100" class="sr-only"> A100</label>
+              <label class="form-radio p3-mono"><input type="radio" name="gpu" value="L40S" class="sr-only"> L40S</label>
+              <label class="form-radio p3-mono"><input type="radio" name="gpu" value="RTX4090" class="sr-only"> RTX 4090</label>
+              <label class="form-radio p3-mono"><input type="radio" name="gpu" value="other" class="sr-only"> Other</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label p3-mono" for="message">Message</label>
+            <textarea id="message" class="form-input" placeholder="Tell us about your project (optional)"></textarea>
+          </div>
+          <button type="submit" class="btn btn-cornered btn-dark" style="margin-top:12px;width:100%;justify-content:center;background:var(--rich-carbon);color:var(--off-white);border-radius:8px">
+            <span class="btn-text-wrapper p2-mono" style="color:var(--off-white)">
+              <span class="btn-text">Send message</span>
+              <span class="btn-text-clone" aria-hidden="true">Send message</span>
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="js/i18n.js"></script>
+  <script defer src="js/main.js"></script>
+  <script defer src="js/gpu-particles.js"></script>
+  <script type="module" src="js/three-scene.js"></script>
+  <script>
+    // Radio button selection
+    document.querySelectorAll('.form-radio').forEach(radio => {
+      radio.addEventListener('click', () => {
+        document.querySelectorAll('.form-radio').forEach(r => r.classList.remove('selected'));
+        radio.classList.add('selected');
+        radio.querySelector('input').checked = true;
+      });
+    });
+  </script>
+</body>
+</html>
