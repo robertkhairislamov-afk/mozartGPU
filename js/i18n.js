@@ -717,20 +717,20 @@
     'footer-link__gpu-catalog':     '.footer-col:nth-child(1) li:nth-child(1) a',
     'footer-link__pricing':         '.footer-col:nth-child(1) li:nth-child(2) a',
     'footer-link__enterprise':      '.footer-col:nth-child(1) li:nth-child(3) a',
-    'footer-link__status':          '.footer-col:nth-child(1) li:nth-child(4) a',
+    'footer-link__status':          '.footer-col:nth-child(1) li:nth-child(4) span',
     'footer-col-dev__heading':      '.footer-col:nth-child(2) h4',
     'footer-link__docs':            '.footer-col:nth-child(2) li:nth-child(1) a',
-    'footer-link__api':             '.footer-col:nth-child(2) li:nth-child(2) a',
-    'footer-link__cli':             '.footer-col:nth-child(2) li:nth-child(3) a',
-    'footer-link__sdk':             '.footer-col:nth-child(2) li:nth-child(4) a',
+    'footer-link__api':             '.footer-col:nth-child(2) li:nth-child(2) span',
+    'footer-link__cli':             '.footer-col:nth-child(2) li:nth-child(3) span',
+    'footer-link__sdk':             '.footer-col:nth-child(2) li:nth-child(4) span',
     'footer-col-company__heading':  '.footer-col:nth-child(3) h4',
     'footer-link__about':           '.footer-col:nth-child(3) li:nth-child(1) a',
-    'footer-link__blog':            '.footer-col:nth-child(3) li:nth-child(2) a',
-    'footer-link__careers':         '.footer-col:nth-child(3) li:nth-child(3) a',
+    'footer-link__blog':            '.footer-col:nth-child(3) li:nth-child(2) span',
+    'footer-link__careers':         '.footer-col:nth-child(3) li:nth-child(3) span',
     'footer-link__contact':         '.footer-col:nth-child(3) li:nth-child(4) a',
-    'footer__privacy':   '.footer-legal a:nth-child(1)',
-    'footer__terms':     '.footer-legal a:nth-child(2)',
-    'footer__cookies':   '.footer-legal a:nth-child(3)',
+    'footer__privacy':   '.footer-legal__item:nth-child(1)',
+    'footer__terms':     '.footer-legal__item:nth-child(2)',
+    'footer__cookies':   '.footer-legal__item:nth-child(3)',
     'footer__copyright': '.footer-copyright p',
 
     // ── Contact Modal ──
@@ -840,14 +840,6 @@
     if (form) {
       form.setAttribute('onsubmit', "event.preventDefault(); alert('" + thankYouMsg.replace(/'/g, "\\'") + "')");
     }
-
-    const legalAlertKeys = ['footer__privacy_alert', 'footer__terms_alert', 'footer__cookies_alert'];
-    document.querySelectorAll('.footer-legal a[onclick]').forEach((a, i) => {
-      const msg = t[legalAlertKeys[i]] || TRANSLATIONS.en[legalAlertKeys[i]];
-      if (msg) {
-        a.setAttribute('onclick', "event.preventDefault(); alert('" + msg.replace(/'/g, "\\'") + "')");
-      }
-    });
 
     // ── Active lang-btn state ──
     document.querySelectorAll('.lang-btn').forEach(btn => {

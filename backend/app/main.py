@@ -4,9 +4,11 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, billing, gpus, instances, ssh_keys
+from app.database import engine, Base
+from app.routers import auth, billing, contact, gpus, instances, ssh_keys
 from app.routers.gpu_models import router as gpu_models_router, seed_gpu_models
 from app.worker import start_background_workers
+import app.models  # noqa: F401 — registers all ORM models with Base.metadata
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +35,18 @@ app.include_router(gpu_models_router, prefix="/api/v1/gpu-models", tags=["GPU Mo
 app.include_router(instances.router, prefix="/api/v1/instances", tags=["Instances"])
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["Billing"])
 app.include_router(ssh_keys.router, prefix="/api/v1/ssh-keys", tags=["SSH Keys"])
+app.include_router(contact.router, prefix="/api/v1", tags=["Contact"])
 
 _worker_tasks: list[asyncio.Task] = []
 
 
 @app.on_event("startup")
 async def on_startup() -> None:
+    # Create all tables that don't exist yet (idempotent — safe on every restart).
+    # In production with real migrations, replace this with `alembic upgrade head`.
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables created (create_all completed)")
     await seed_gpu_models()
     global _worker_tasks
     _worker_tasks = start_background_workers()

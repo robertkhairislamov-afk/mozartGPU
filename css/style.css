@@ -1443,6 +1443,26 @@ section {
   }
 }
 
+/* ===== Footer Social ===== */
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-social__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(17, 17, 17, 0.5);
+  transition: color 0.25s ease, opacity 0.25s ease;
+  text-decoration: none;
+}
+
+.footer-social__link:hover {
+  color: rgba(17, 17, 17, 1);
+}
+
 /* ===== Loading Screen ===== */
 .loader {
   position: fixed;
@@ -1985,6 +2005,13 @@ textarea.form-input {
 .footer-link:hover {
   opacity: 1;
   color: var(--gold);
+}
+.footer-link--disabled {
+  color: inherit;
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
 }
 @media (max-width: 768px) {
   .footer-columns {

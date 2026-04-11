@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/console/assets/:file", "destination": "/console/dist/assets/:file" },
+    { "source": "/console", "destination": "/console/dist/index.html" },
+    { "source": "/console/", "destination": "/console/dist/index.html" },
+    { "source": "/console/:path*", "destination": "/console/dist/index.html" }
+  ]
+}

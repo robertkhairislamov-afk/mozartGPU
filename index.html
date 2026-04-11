@@ -150,13 +150,13 @@
       <div class="hero-bottom p3-mono" style="color:rgba(245,245,245,0.6)">
         <div class="hero-bottom-border">
           <div class="hero-bottom-left">
-            <button class="btn btn-cornered btn-dark" data-open-contact>
+            <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
               <span class="btn-dot"></span>
               <span class="btn-text-wrapper p2-mono">
                 <span class="btn-text">Rent GPU Now</span>
                 <span class="btn-text-clone" aria-hidden="true">Rent GPU Now</span>
               </span>
-            </button>
+            </a>
             <p class="hero-price p3-mono" style="margin-top:12px;opacity:0.6">From $0.45/hr. Pay with BTC, USDT, USDC. No KYC.</p>
             <svg class="hero-emblem" style="display:block" width="65" height="65" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="2" y="8" width="8" height="52" rx="4" fill="currentColor"/>
@@ -462,7 +462,7 @@
             <span>3.35 TB/s</span>
             <span>990 TFLOPS</span>
           </div>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance?gpu=h100" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -482,7 +482,7 @@
             <span>2.0 TB/s</span>
             <span>312 TFLOPS</span>
           </div>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance?gpu=a100" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -502,7 +502,7 @@
             <span>864 GB/s</span>
             <span>362 TFLOPS</span>
           </div>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance?gpu=l40s" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -522,7 +522,7 @@
             <span>1.0 TB/s</span>
             <span>165 TFLOPS FP32</span>
           </div>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance?gpu=rtx4090" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -542,7 +542,7 @@
             <span>936 GB/s</span>
             <span>142 TFLOPS</span>
           </div>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
+          <a href="/console/#/new-instance?gpu=rtx3090" class="btn btn-cornered btn-light" style="margin-top:12px;width:100%">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Rent Now</span>
@@ -645,7 +645,7 @@
             <li>CUDA 12.4 pre-installed</li>
             <li>50 GB storage included</li>
           </ul>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance?plan=rtx4090_10h" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -665,7 +665,7 @@
             <li>100 GB storage included</li>
             <li>Save 11% vs hourly</li>
           </ul>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance?plan=a100_50h" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -686,7 +686,7 @@
             <li>Save 12% vs hourly</li>
             <li>Priority support</li>
           </ul>
-          <a href="/console/#/new-instance" class="btn btn-cornered btn-dark">
+          <a href="/console/#/new-instance?plan=h100_50h" class="btn btn-cornered btn-dark">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Pay with Crypto</span>
@@ -958,13 +958,13 @@
               GPU by the hour. Crypto payments. No KYC. Start building today.
             </p>
             <div style="margin-top:18px;width:100%;max-width:200px">
-              <button class="btn btn-cornered btn-dark" style="width:100%" data-open-contact>
+              <a href="/console/#/new-instance" class="btn btn-cornered btn-dark" style="width:100%;display:flex">
                 <span class="btn-dot"></span>
                 <span class="btn-text-wrapper p2-mono">
                   <span class="btn-text">Rent GPU Now</span>
                   <span class="btn-text-clone" aria-hidden="true">Rent GPU Now</span>
                 </span>
-              </button>
+              </a>
             </div>
           </div>
 
@@ -985,26 +985,26 @@
                 <ul>
                   <li><a href="#portfolio" class="footer-link p2-mono">GPU Catalog</a></li>
                   <li><a href="#packages" class="footer-link p2-mono">Pricing</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Enterprise</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Status Page</a></li>
+                  <li><a href="#pricing" class="footer-link p2-mono">Enterprise</a></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">Status Page</span></li>
                 </ul>
               </div>
               <div class="footer-col">
                 <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">DEVELOPERS</h4>
                 <ul>
                   <li><a href="#developers" class="footer-link p2-mono">Documentation</a></li>
-                  <li><a href="#" class="footer-link p2-mono">API Reference</a></li>
-                  <li><a href="#" class="footer-link p2-mono">CLI Guide</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Python SDK</a></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">API Reference</span></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">CLI Guide</span></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">Python SDK</span></li>
                 </ul>
               </div>
               <div class="footer-col">
                 <h4 class="p3-mono" style="margin-bottom:12px;opacity:0.5">COMPANY</h4>
                 <ul>
-                  <li><a href="#" class="footer-link p2-mono">About</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Blog</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Careers</a></li>
-                  <li><a href="#" class="footer-link p2-mono">Contact</a></li>
+                  <li><a href="#ethos" class="footer-link p2-mono">About</a></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">Blog</span></li>
+                  <li><span class="footer-link footer-link--disabled p2-mono" title="Coming Soon">Careers</span></li>
+                  <li><a href="#" class="footer-link p2-mono" data-open-contact>Contact</a></li>
                 </ul>
               </div>
             </div>
@@ -1012,12 +1012,26 @@
 
           <div style="order:3;display:flex;flex-direction:column;gap:40px;grid-column:span 2">
             <div class="footer-legal p2-mono">
-              <a href="#privacy" onclick="event.preventDefault(); alert('Privacy Policy — Coming Soon')">Privacy Policy</a>
-              <a href="#terms" onclick="event.preventDefault(); alert('Terms and Conditions — Coming Soon')">Terms and Conditions</a>
-              <a href="#cookies" onclick="event.preventDefault(); alert('Cookie Policy — Coming Soon')">Cookie Policy</a>
+              <span class="footer-link--disabled footer-legal__item" title="Coming Soon">Privacy Policy</span>
+              <span class="footer-link--disabled footer-legal__item" title="Coming Soon">Terms and Conditions</span>
+              <span class="footer-link--disabled footer-legal__item" title="Coming Soon">Cookie Policy</span>
             </div>
-            <div class="footer-copyright p3-mono">
-              <p>Copyright &copy; 2026 MOZART GPU</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+              <div class="footer-copyright p3-mono">
+                <p>Copyright &copy; 2026 MOZART GPU</p>
+              </div>
+              <div class="footer-social">
+                <a href="https://github.com/robertkhairislamov-afk/mozartGPU" target="_blank" rel="noopener" aria-label="GitHub" class="footer-social__link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                </a>
+                <a href="https://t.me/mozartgpu" target="_blank" rel="noopener" aria-label="Telegram" class="footer-social__link">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1035,7 +1049,7 @@
         <h2 class="h3 uppercase">Get in touch.</h2>
         <div style="text-align:center;padding:20px 0;border-bottom:1px solid rgba(17,17,17,0.1);margin-bottom:20px">
           <p class="p1-mono" style="margin-bottom:12px">Fastest way to get started:</p>
-          <a href="https://t.me/mozartgpu" target="_blank" class="btn btn-cornered btn-dark" style="display:inline-flex">
+          <a href="https://t.me/mozartgpu_bot" target="_blank" class="btn btn-cornered btn-dark" style="display:inline-flex">
             <span class="btn-dot"></span>
             <span class="btn-text-wrapper p2-mono">
               <span class="btn-text">Chat on Telegram</span>

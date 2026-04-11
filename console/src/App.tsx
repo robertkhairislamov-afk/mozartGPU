@@ -31,6 +31,8 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/instances" element={<Instances />} />
           <Route path="/instances/new" element={<NewInstance />} />
+          {/* Alias from landing page deep-links: /console/#/new-instance?plan=...&gpu=... */}
+          <Route path="/new-instance" element={<NewInstance />} />
           <Route path="/instances/:id" element={<InstanceDetail />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/ssh-keys" element={<SshKeys />} />

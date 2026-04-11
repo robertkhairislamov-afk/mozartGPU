@@ -1,9 +1,23 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useGpus } from '@/hooks/useGpus'
 import { useSshKeys } from '@/hooks/useSshKeys'
 import { useCreateInstance } from '@/hooks/useInstances'
 import type { GpuModel, SshKey } from '@/lib/types'
+
+/** Maps landing-page plan slugs to { gpu slug, hours } */
+const PLAN_MAP: Record<string, { gpu: string; hours: number }> = {
+  rtx4090_10h: { gpu: 'rtx4090', hours: 10 },
+  a100_50h:    { gpu: 'a100',    hours: 50 },
+  h100_50h:    { gpu: 'h100',    hours: 50 },
+}
+
+/** Loose match: does the GPU name contain the slug? */
+function gpuMatchesSlug(gpu: GpuModel, slug: string): boolean {
+  const name = gpu.name.toLowerCase().replace(/[\s-]/g, '')
+  const s = slug.toLowerCase().replace(/[\s-]/g, '')
+  return name.includes(s)
+}
 
 const TEMPLATES = [
   { id: 'pytorch', label: 'PyTorch 2.2', desc: 'CUDA 12.1, Python 3.11' },
@@ -17,6 +31,7 @@ const STEPS = ['Select GPU', 'Template', 'Config', 'Review']
 
 export default function NewInstance() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { data: gpus, isLoading: gpusLoading } = useGpus()
   const { data: sshKeys, isLoading: keysLoading } = useSshKeys()
   const createMutation = useCreateInstance()
@@ -27,6 +42,30 @@ export default function NewInstance() {
   const [selectedKey, setSelectedKey] = useState<SshKey | null>(null)
   const [hours, setHours] = useState(10)
   const [disk, setDisk] = useState(50)
+
+  // Pre-select GPU / hours from landing-page deep-link query params
+  useEffect(() => {
+    if (!gpus || gpus.length === 0) return
+
+    const planParam = searchParams.get('plan')
+    const gpuParam  = searchParams.get('gpu')
+
+    let targetSlug: string | null = null
+    let targetHours: number | null = null
+
+    if (planParam && PLAN_MAP[planParam]) {
+      targetSlug  = PLAN_MAP[planParam].gpu
+      targetHours = PLAN_MAP[planParam].hours
+    } else if (gpuParam) {
+      targetSlug = gpuParam
+    }
+
+    if (targetSlug) {
+      const match = gpus.find((g) => gpuMatchesSlug(g, targetSlug!))
+      if (match) setSelectedGpu(match)
+    }
+    if (targetHours !== null) setHours(targetHours)
+  }, [gpus, searchParams])
 
   const canNext =
     (step === 0 && selectedGpu !== null) ||
