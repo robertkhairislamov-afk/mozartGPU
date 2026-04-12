@@ -162,7 +162,7 @@ services:
       BTCPAY_WEBHOOK_SECRET:  ${BTCPAY_WEBHOOK_SECRET}
       PROVISION_WEBHOOK_PORT: ${PROVISION_WEBHOOK_PORT:-8081}
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/health | grep -q 'ok'"]
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if b'ok' in urllib.request.urlopen('http://localhost:8081/health', timeout=4).read() else 1)"]
       interval: 20s
       timeout: 5s
       retries: 3
@@ -196,7 +196,7 @@ services:
       TELEGRAM_BOT_TOKEN:      ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_ADMIN_CHAT_ID:  ${TELEGRAM_ADMIN_CHAT_ID}
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/api/v1/health | grep -q 'ok'"]
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if b'ok' in urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=4).read() else 1)"]
       interval: 20s
       timeout: 5s
       retries: 3

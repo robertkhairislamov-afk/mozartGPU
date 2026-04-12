@@ -65,7 +65,7 @@ async def _resolve_package_price(package_id: str, db) -> Decimal:
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"Package '{package_id}' not found. "
-               f"Available: {[f'{slug}_{p[\"hours\"]}h' for p in gpu.packages]}",
+               f"Available: {[slug + '_' + str(p['hours']) + 'h' for p in gpu.packages]}",
     )
 
 
@@ -157,6 +157,26 @@ async def create_deposit(
 # BTCPay webhook — receives InvoiceSettled events (баг #3)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# BTCPay callback verification — confirm invoice status server-side
+# ---------------------------------------------------------------------------
+
+async def _verify_invoice_with_btcpay(btcpay_invoice_id: str) -> dict | None:
+    """Call BTCPay API to independently verify an invoice's status and amount."""
+    if not settings.btcpay_url or not settings.btcpay_api_key:
+        return None
+    url = f"{settings.btcpay_url}/api/v1/stores/{settings.btcpay_store_id}/invoices/{btcpay_invoice_id}"
+    headers = {"Authorization": f"token {settings.btcpay_api_key}"}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url, headers=headers)
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as exc:
+        logger.error("BTCPay verification call failed for %s: %s", btcpay_invoice_id, exc)
+        return None
+
+
 @router.post("/webhook/btcpay", status_code=status.HTTP_200_OK)
 async def btcpay_webhook(request: Request, db: DbDep) -> dict:
     """Receive BTCPay Server webhook, verify HMAC, update Invoice status."""
@@ -188,18 +208,36 @@ async def btcpay_webhook(request: Request, db: DbDep) -> dict:
     import json
     payload = json.loads(raw_body)
     event_type = payload.get("type")
-    logger.info("BTCPay webhook: type=%s", event_type)
+    invoice_id = payload.get("invoiceId")
+    logger.info("BTCPay webhook: type=%s invoice=%s", event_type, invoice_id)
+
+    if not invoice_id:
+        return {"status": "error", "detail": "missing invoiceId"}
+
+    # Handle expired / invalid invoices
+    if event_type in ("InvoiceExpired", "InvoiceInvalid"):
+        result = await db.execute(
+            select(Invoice).where(Invoice.btcpay_invoice_id == invoice_id)
+        )
+        invoice = result.scalar_one_or_none()
+        if invoice and invoice.status == InvoiceStatus.pending:
+            invoice.status = (
+                InvoiceStatus.expired if event_type == "InvoiceExpired"
+                else InvoiceStatus.invalid
+            )
+            await db.commit()
+            logger.info("Invoice %s marked as %s", invoice_id, invoice.status.value)
+        return {"status": invoice.status.value if invoice else "not_found", "invoice": invoice_id}
 
     if event_type != "InvoiceSettled":
         return {"status": "ignored", "event": event_type}
 
-    invoice_id = payload.get("invoiceId")
-    if not invoice_id:
-        return {"status": "error", "detail": "missing invoiceId"}
-
-    # Find and update invoice
+    # Find invoice in DB with row-level lock (idempotency: protects against
+    # parallel webhook deliveries double-crediting total_spent_usd).
     result = await db.execute(
-        select(Invoice).where(Invoice.btcpay_invoice_id == invoice_id)
+        select(Invoice)
+        .where(Invoice.btcpay_invoice_id == invoice_id)
+        .with_for_update()
     )
     invoice = result.scalar_one_or_none()
 
@@ -210,6 +248,39 @@ async def btcpay_webhook(request: Request, db: DbDep) -> dict:
     if invoice.status == InvoiceStatus.settled:
         return {"status": "duplicate", "invoice": invoice_id}
 
+    # --- Bug #14 fix: server-side verification via BTCPay API ---
+    btcpay_data = await _verify_invoice_with_btcpay(invoice_id)
+    if btcpay_data:
+        btcpay_status = btcpay_data.get("status", "").lower()
+        # Greenfield v1 uses "Settled"; "complete" kept for legacy v1 APIs.
+        if btcpay_status not in ("settled", "complete"):
+            logger.warning(
+                "Invoice %s: webhook says settled but BTCPay API says '%s' — rejecting",
+                invoice_id, btcpay_status,
+            )
+            return {"status": "verification_failed", "invoice": invoice_id, "btcpay_status": btcpay_status}
+
+        # Verify currency — reject if BTCPay returns non-USD (misconfig protection).
+        btcpay_currency = btcpay_data.get("currency", "").upper()
+        if btcpay_currency and btcpay_currency != "USD":
+            logger.error(
+                "Invoice %s: currency mismatch — expected USD, BTCPay says '%s'",
+                invoice_id, btcpay_currency,
+            )
+            return {"status": "currency_mismatch", "invoice": invoice_id, "btcpay_currency": btcpay_currency}
+
+        # Verify amount matches
+        btcpay_amount = Decimal(str(btcpay_data.get("amount", "0")))
+        if btcpay_amount > 0 and btcpay_amount != invoice.amount_usd:
+            logger.error(
+                "Invoice %s: amount mismatch — expected $%s, BTCPay says $%s",
+                invoice_id, invoice.amount_usd, btcpay_amount,
+            )
+            return {"status": "amount_mismatch", "invoice": invoice_id}
+    else:
+        logger.warning("Invoice %s: BTCPay verification unavailable, proceeding with HMAC-only trust", invoice_id)
+
+    # Mark as settled
     invoice.status = InvoiceStatus.settled
     invoice.settled_at = datetime.now(timezone.utc)
 
@@ -221,9 +292,9 @@ async def btcpay_webhook(request: Request, db: DbDep) -> dict:
         user.total_spent_usd = (user.total_spent_usd or Decimal("0")) + invoice.amount_usd
 
     await db.commit()
-    logger.info("Invoice %s settled (amount=$%s)", invoice_id, invoice.amount_usd)
+    logger.info("Invoice %s settled (amount=$%s, verified=%s)", invoice_id, invoice.amount_usd, btcpay_data is not None)
 
-    return {"status": "settled", "invoice": invoice_id}
+    return {"status": "settled", "invoice": invoice_id, "verified": btcpay_data is not None}
 
 
 @router.get("/invoices", response_model=list[InvoiceResponse])
