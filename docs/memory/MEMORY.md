@@ -1,0 +1,17 @@
+- [MOZART GPU Rental Platform](project_mozart.md) — премиальная платформа аренды GPU, vanilla HTML/CSS/JS, дизайн-система и каталог
+- [Профиль пользователя](user_profile.md) — Роберт, предприниматель, Windows 11, Anthropic + Google Pro, итеративный стиль
+- [История работ](work_history.md) — выполненные секции лендинга, команда из 8 агентов, Agent Flow визуализация
+- [Обратная связь](feedback_workflow.md) — не SVG иконки, low-poly GPU, разнообразные промпты, мобильное превью
+- [Roadmap после аудита](audit_roadmap.md) — 50+ задач от 8 агентов (2026-04-09), приоритеты P0-P3, чек-лист до деплоя
+- [Infrastructure Roadmap](infra_roadmap.md) — 3 фазы: MVP (FastAPI+Docker $3-8K), Growth (K8s $20-50K), Enterprise ($100-300K)
+- [GPU Resale Architecture](resale_architecture.md) — ресейл vast.ai→MOZART, маржа 40-60%, break-even 1600 GPU-ч/мес
+- [Vast.ai конкурент](vastai_competitor.md) — 17K GPU, 120K devs, marketplace P2P, 3 продукта, API reference
+- [Юридическая структура](legal_structure.md) — РФ гражданин в Тайланде: крипто→Thai Company→BOI, визы, санкции
+- [Бухгалтерия и финансы](finance_accounting.md) — prepaid Stripe, dual ledger, VAT OSS, Xero, P&L, break-even $1205/мес
+- [Dashboard UX](dashboard_ux.md) — 10 экранов, React+shadcn/ui, wizard создания GPU, onboarding flow
+- [Исследование: бизнес-анализ](research_business_analysis.md) — рынок $3.34B→$26B, unit economics, B200 маржа 180%, Чонбури, 2 этапа
+- [Исследование: GTM стратегия](research_gtm_strategy.md) — outbound-first, GitHub/Reddit лидген, Bittensor/ZK ниши, 50 B2B клиентов
+- [Credentials и сервисы](credentials_reference.md) — GitHub repo, Telegram Bot, Vast.ai, VPS, BTCPay статус
+- [Критические архитектурные проблемы](critical_architecture_issues.md) — 13/16 закрыто в сессии 4, 3 осталось
+- [P2P GPU Marketplace](p2p_marketplace_plan.md) — хосты сдают GPU за комиссию 5-20%, host agent, 5 таблиц, 3-4 недели
+- [Vast.ai Security & Auth](vastai_security_auth.md) — gaps, наши преимущества (scoped keys, HMAC, VM), P0 auth приоритеты
