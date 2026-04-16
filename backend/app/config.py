@@ -15,11 +15,10 @@ class Settings(BaseSettings):
     # Vast.ai
     vast_api_key: str = ""
 
-    # BTCPay
-    btcpay_url: str = ""
-    btcpay_store_id: str = ""
-    btcpay_api_key: str = ""
-    btcpay_webhook_secret: str = ""
+    # NOWPayments
+    nowpayments_api_key: str = ""
+    nowpayments_ipn_secret: str = ""
+    nowpayments_api_url: str = "https://api.nowpayments.io/v1"
 
     # Telegram
     telegram_bot_token: str = ""

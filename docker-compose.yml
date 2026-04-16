@@ -13,6 +13,7 @@ volumes:
   postgres_data:
   btcpay_data:
   nbxplorer_data:
+  bitcoin_data:
   nginx_ssl:            # certbot will write here; nginx reads certs from here
 
 # ---------------------------------------------------------------------------
@@ -52,7 +53,36 @@ services:
       start_period: 20s
 
   # -------------------------------------------------------------------------
-  # 2. NBXplorer — Bitcoin/UTXO indexer required by BTCPay Server
+  # 2a. Bitcoin Core — pruned node for on-chain payment verification
+  # -------------------------------------------------------------------------
+  bitcoind:
+    image: btcpayserver/bitcoin:27.1
+    container_name: mozart_bitcoind
+    restart: unless-stopped
+    networks:
+      - mozart_net
+    volumes:
+      - bitcoin_data:/data
+    environment:
+      BITCOIN_EXTRA_ARGS: |-
+        server=1
+        rpcuser=${BTC_RPC_USER:-btcrpc}
+        rpcpassword=${BTC_RPC_PASSWORD}
+        rpcallowip=0.0.0.0/0
+        rpcbind=0.0.0.0
+        prune=5000
+        txindex=0
+        dbcache=512
+        maxmempool=256
+    healthcheck:
+      test: ["CMD", "bitcoin-cli", "-rpcuser=btcrpc", "-rpcpassword=${BTC_RPC_PASSWORD}", "getblockchaininfo"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # -------------------------------------------------------------------------
+  # 2b. NBXplorer — Bitcoin/UTXO indexer required by BTCPay Server
   # -------------------------------------------------------------------------
   nbxplorer:
     image: nicolasdorier/nbxplorer:2.5.11
@@ -63,15 +93,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      bitcoind:
+        condition: service_healthy
     environment:
-      NBXPLORER_NETWORK:  mainnet
-      NBXPLORER_POSTGRES: Host=postgres;Database=${POSTGRES_DB:-btcpay};Username=${POSTGRES_USER:-btcpay};Password=${POSTGRES_PASSWORD}
-      # Optional: point to a full Bitcoin node for on-chain confirmations.
-      # Leave blank to use NBXplorer's light mode (Electrum-based).
-      NBXPLORER_BTCRPCURL: ${NBXPLORER_BTCRPCURL:-}
-      NBXPLORER_BTCRPCUSER: ${NBXPLORER_BTCRPCUSER:-}
-      NBXPLORER_BTCRPCPASSWORD: ${NBXPLORER_BTCRPCPASSWORD:-}
-      NBXPLORER_BIND: 0.0.0.0:32838
+      NBXPLORER_NETWORK:         mainnet
+      NBXPLORER_POSTGRES:        Host=postgres;Database=${POSTGRES_DB:-btcpay};Username=${POSTGRES_USER:-btcpay};Password=${POSTGRES_PASSWORD}
+      NBXPLORER_BTCRPCURL:       http://bitcoind:8332
+      NBXPLORER_BTCRPCUSER:      ${BTC_RPC_USER:-btcrpc}
+      NBXPLORER_BTCRPCPASSWORD:  ${BTC_RPC_PASSWORD}
+      NBXPLORER_BIND:            0.0.0.0:32838
     volumes:
       - nbxplorer_data:/datadir
     healthcheck:
@@ -101,7 +131,8 @@ services:
     environment:
       BTCPAY_POSTGRES:     Host=postgres;Database=${POSTGRES_DB:-btcpay};Username=${POSTGRES_USER:-btcpay};Password=${POSTGRES_PASSWORD}
       BTCPAY_EXPLORERURL:  http://nbxplorer:32838
-      BTCPAY_ROOTURI:      ${BTCPAY_ROOT_URI:-https://btcpay.mozartgpu.com}
+      BTCPAY_ROOTURI:      ${BTCPAY_ROOT_URI:-https://web3playlab.win/btcpay/}
+      BTCPAY_ROOTPATH:     /btcpay/
       BTCPAY_BIND:         0.0.0.0:49392
       # BTCPAY_SOCKSENDPOINT: socks5://tor:9050   # uncomment to route through Tor
     volumes:
@@ -186,15 +217,13 @@ services:
       - "127.0.0.1:8000:8000"
     env_file: .env
     environment:
-      DATABASE_URL:            ${DATABASE_URL}
-      JWT_SECRET:              ${JWT_SECRET}
-      VAST_API_KEY:            ${VAST_API_KEY}
-      BTCPAY_URL:              ${BTCPAY_ROOT_URI:-https://btcpay.mozartgpu.com}
-      BTCPAY_STORE_ID:         ${BTCPAY_STORE_ID:-}
-      BTCPAY_API_KEY:          ${BTCPAY_API_KEY:-}
-      BTCPAY_WEBHOOK_SECRET:   ${BTCPAY_WEBHOOK_SECRET}
-      TELEGRAM_BOT_TOKEN:      ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_ADMIN_CHAT_ID:  ${TELEGRAM_ADMIN_CHAT_ID}
+      DATABASE_URL:              ${DATABASE_URL}
+      JWT_SECRET:                ${JWT_SECRET}
+      VAST_API_KEY:              ${VAST_API_KEY}
+      NOWPAYMENTS_API_KEY:       ${NOWPAYMENTS_API_KEY:-}
+      NOWPAYMENTS_IPN_SECRET:    ${NOWPAYMENTS_IPN_SECRET:-}
+      TELEGRAM_BOT_TOKEN:        ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ADMIN_CHAT_ID:    ${TELEGRAM_ADMIN_CHAT_ID}
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if b'ok' in urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=4).read() else 1)"]
       interval: 20s

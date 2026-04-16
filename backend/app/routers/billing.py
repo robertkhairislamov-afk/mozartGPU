@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import json
 import logging
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -25,6 +26,11 @@ from app.schemas.billing import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+NOWPAYMENTS_HEADERS = {
+    "x-api-key": settings.nowpayments_api_key,
+    "Content-Type": "application/json",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -70,32 +76,64 @@ async def _resolve_package_price(package_id: str, db) -> Decimal:
 
 
 # ---------------------------------------------------------------------------
-# BTCPay invoice creation
+# NOWPayments — invoice creation
 # ---------------------------------------------------------------------------
 
-async def _create_btcpay_invoice(
+async def _create_nowpayments_invoice(
     amount_usd: Decimal,
+    order_id: str,
     package_id: str,
-    buyer_email: str,
 ) -> dict:
-    url = f"{settings.btcpay_url}/api/v1/stores/{settings.btcpay_store_id}/invoices"
-    headers = {
-        "Authorization": f"token {settings.btcpay_api_key}",
-        "Content-Type": "application/json",
-    }
+    """Create a NOWPayments invoice. Returns dict with id, invoice_url, etc."""
+    url = f"{settings.nowpayments_api_url}/invoice"
     body = {
-        "amount": str(amount_usd),
-        "currency": "USD",
-        "metadata": {
-            "packageId": package_id,
-            "buyerEmail": buyer_email,
-        },
-        "checkout": {"expirationMinutes": 60},
+        "price_amount": float(amount_usd),
+        "price_currency": "usd",
+        "order_id": order_id,
+        "order_description": f"GPU rental — {package_id}",
+        "ipn_callback_url": f"https://web3playlab.win/api/v1/billing/webhook/nowpayments",
+        "success_url": "https://web3playlab.win/console/billing?paid=1",
+        "cancel_url": "https://web3playlab.win/console/billing?cancelled=1",
     }
     async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(url, headers=headers, json=body)
+        resp = await client.post(url, headers=NOWPAYMENTS_HEADERS, json=body)
         resp.raise_for_status()
         return resp.json()
+
+
+# ---------------------------------------------------------------------------
+# NOWPayments — server-side payment verification
+# ---------------------------------------------------------------------------
+
+async def _verify_payment_with_nowpayments(payment_id: int | str) -> dict | None:
+    """Call NOWPayments API to independently verify a payment status."""
+    url = f"{settings.nowpayments_api_url}/payment/{payment_id}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url, headers=NOWPAYMENTS_HEADERS)
+            resp.raise_for_status()
+            return resp.json()
+    except Exception as exc:
+        logger.error("NOWPayments verification failed for %s: %s", payment_id, exc)
+        return None
+
+
+# ---------------------------------------------------------------------------
+# NOWPayments — HMAC-SHA512 signature verification
+# ---------------------------------------------------------------------------
+
+def _verify_nowpayments_signature(raw_body: bytes, sig_header: str) -> bool:
+    """Verify x-nowpayments-sig HMAC-SHA512 signature (sorted JSON keys)."""
+    if not settings.nowpayments_ipn_secret:
+        return False
+    payload = json.loads(raw_body)
+    sorted_payload = json.dumps(payload, separators=(",", ":"), sort_keys=True)
+    computed = hmac.new(
+        settings.nowpayments_ipn_secret.encode(),
+        sorted_payload.encode(),
+        hashlib.sha512,
+    ).hexdigest()
+    return hmac.compare_digest(computed, sig_header)
 
 
 # ---------------------------------------------------------------------------
@@ -108,177 +146,141 @@ async def create_deposit(
     current_user: CurrentUser,
     db: DbDep,
 ) -> DepositResponse:
-    """Create a BTCPay invoice for a GPU package deposit."""
+    """Create a NOWPayments invoice for a GPU package deposit."""
     amount = await _resolve_package_price(payload.package_id, db)
 
-    buyer_email = payload.email or current_user.email
+    # Use invoice DB id as order_id for traceability
+    invoice = Invoice(
+        user_id=current_user.id,
+        btcpay_invoice_id="pending",  # placeholder, updated below
+        amount_usd=amount,
+        status=InvoiceStatus.pending,
+        package_id=payload.package_id,
+        metadata_={},
+    )
+    db.add(invoice)
+    await db.flush()
+
+    order_id = str(invoice.id)
 
     try:
-        btcpay_data = await _create_btcpay_invoice(amount, payload.package_id, buyer_email)
+        np_data = await _create_nowpayments_invoice(amount, order_id, payload.package_id)
     except httpx.HTTPStatusError as exc:
-        logger.error("BTCPay invoice creation failed: %s", exc)
+        logger.error("NOWPayments invoice creation failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Payment provider unavailable",
         )
 
-    btcpay_id: str = btcpay_data["id"]
-
-    invoice = Invoice(
-        user_id=current_user.id,
-        btcpay_invoice_id=btcpay_id,
-        amount_usd=amount,
-        status=InvoiceStatus.pending,
-        package_id=payload.package_id,
-        metadata_=btcpay_data,
-    )
-    db.add(invoice)
+    # Store NOWPayments invoice ID and full response
+    np_invoice_id = str(np_data["id"])
+    invoice.btcpay_invoice_id = np_invoice_id
+    invoice.metadata_ = np_data
     await db.flush()
 
-    checkout_link: str = btcpay_data.get("checkoutLink", "")
-    expires_at_str = btcpay_data.get("expirationTime")
-    expires_at = None
-    if expires_at_str is not None:
-        try:
-            expires_at = datetime.fromtimestamp(int(expires_at_str), tz=timezone.utc)
-        except (ValueError, TypeError):
-            expires_at = None
+    checkout_url: str = np_data.get("invoice_url", "")
 
     return DepositResponse(
-        invoice_id=btcpay_id,
-        checkout_url=checkout_link,
+        invoice_id=np_invoice_id,
+        checkout_url=checkout_url,
         amount_usd=amount,
         package_id=payload.package_id,
-        expires_at=expires_at,
+        expires_at=None,
     )
 
 
 # ---------------------------------------------------------------------------
-# BTCPay webhook — receives InvoiceSettled events (баг #3)
+# NOWPayments IPN webhook
 # ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# BTCPay callback verification — confirm invoice status server-side
-# ---------------------------------------------------------------------------
-
-async def _verify_invoice_with_btcpay(btcpay_invoice_id: str) -> dict | None:
-    """Call BTCPay API to independently verify an invoice's status and amount."""
-    if not settings.btcpay_url or not settings.btcpay_api_key:
-        return None
-    url = f"{settings.btcpay_url}/api/v1/stores/{settings.btcpay_store_id}/invoices/{btcpay_invoice_id}"
-    headers = {"Authorization": f"token {settings.btcpay_api_key}"}
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url, headers=headers)
-            resp.raise_for_status()
-            return resp.json()
-    except Exception as exc:
-        logger.error("BTCPay verification call failed for %s: %s", btcpay_invoice_id, exc)
-        return None
-
-
-@router.post("/webhook/btcpay", status_code=status.HTTP_200_OK)
-async def btcpay_webhook(request: Request, db: DbDep) -> dict:
-    """Receive BTCPay Server webhook, verify HMAC, update Invoice status."""
+@router.post("/webhook/nowpayments", status_code=status.HTTP_200_OK)
+async def nowpayments_webhook(request: Request, db: DbDep) -> dict:
+    """Receive NOWPayments IPN, verify HMAC-SHA512, update Invoice status."""
     raw_body = await request.body()
 
     if len(raw_body) > 16384:
         raise HTTPException(status_code=413, detail="Payload too large")
 
-    # Verify HMAC-SHA256 signature
-    sig_header = request.headers.get("BTCPay-Sig")
-    if not settings.btcpay_webhook_secret:
-        logger.error("BTCPAY_WEBHOOK_SECRET not configured — rejecting")
-        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+    # Verify HMAC-SHA512 signature
+    sig_header = request.headers.get("x-nowpayments-sig", "")
+    if not settings.nowpayments_ipn_secret:
+        logger.error("NOWPAYMENTS_IPN_SECRET not configured — rejecting")
+        raise HTTPException(status_code=500, detail="IPN secret not configured")
 
-    if not sig_header or not sig_header.startswith("sha256="):
-        raise HTTPException(status_code=401, detail="Missing or invalid signature")
+    if not sig_header:
+        raise HTTPException(status_code=401, detail="Missing signature")
 
-    expected_hex = sig_header[len("sha256="):]
-    computed = hmac.new(
-        settings.btcpay_webhook_secret.encode(),
-        raw_body,
-        hashlib.sha256,
-    ).hexdigest()
-
-    if not hmac.compare_digest(computed, expected_hex):
-        logger.warning("Webhook HMAC verification failed")
+    if not _verify_nowpayments_signature(raw_body, sig_header):
+        logger.warning("NOWPayments IPN signature verification failed")
         raise HTTPException(status_code=401, detail="Invalid signature")
 
-    import json
     payload = json.loads(raw_body)
-    event_type = payload.get("type")
-    invoice_id = payload.get("invoiceId")
-    logger.info("BTCPay webhook: type=%s invoice=%s", event_type, invoice_id)
+    payment_status = payload.get("payment_status", "")
+    payment_id = payload.get("payment_id")
+    order_id = payload.get("order_id", "")
+    logger.info("NOWPayments IPN: status=%s payment_id=%s order_id=%s", payment_status, payment_id, order_id)
 
-    if not invoice_id:
-        return {"status": "error", "detail": "missing invoiceId"}
+    if not payment_id:
+        return {"status": "error", "detail": "missing payment_id"}
 
-    # Handle expired / invalid invoices
-    if event_type in ("InvoiceExpired", "InvoiceInvalid"):
-        result = await db.execute(
-            select(Invoice).where(Invoice.btcpay_invoice_id == invoice_id)
-        )
-        invoice = result.scalar_one_or_none()
-        if invoice and invoice.status == InvoiceStatus.pending:
-            invoice.status = (
-                InvoiceStatus.expired if event_type == "InvoiceExpired"
-                else InvoiceStatus.invalid
+    # Handle terminal failure statuses
+    if payment_status in ("expired", "failed", "refunded"):
+        if order_id:
+            result = await db.execute(
+                select(Invoice).where(Invoice.id == order_id).with_for_update()
             )
-            await db.commit()
-            logger.info("Invoice %s marked as %s", invoice_id, invoice.status.value)
-        return {"status": invoice.status.value if invoice else "not_found", "invoice": invoice_id}
+            invoice = result.scalar_one_or_none()
+            if invoice and invoice.status == InvoiceStatus.pending:
+                invoice.status = (
+                    InvoiceStatus.expired if payment_status == "expired"
+                    else InvoiceStatus.invalid
+                )
+                await db.commit()
+                logger.info("Invoice %s marked as %s", order_id, invoice.status.value)
+        return {"status": payment_status}
 
-    if event_type != "InvoiceSettled":
-        return {"status": "ignored", "event": event_type}
+    # Only process "finished" (funds received on our wallet)
+    if payment_status != "finished":
+        return {"status": "ignored", "payment_status": payment_status}
 
-    # Find invoice in DB with row-level lock (idempotency: protects against
-    # parallel webhook deliveries double-crediting total_spent_usd).
+    # Find invoice by order_id (our internal invoice UUID)
+    if not order_id:
+        logger.warning("NOWPayments IPN finished but no order_id")
+        return {"status": "error", "detail": "missing order_id"}
+
     result = await db.execute(
-        select(Invoice)
-        .where(Invoice.btcpay_invoice_id == invoice_id)
-        .with_for_update()
+        select(Invoice).where(Invoice.id == order_id).with_for_update()
     )
     invoice = result.scalar_one_or_none()
 
     if invoice is None:
-        logger.warning("Invoice %s not found in DB", invoice_id)
-        return {"status": "not_found", "invoice": invoice_id}
+        logger.warning("Invoice %s not found in DB", order_id)
+        return {"status": "not_found", "order_id": order_id}
 
     if invoice.status == InvoiceStatus.settled:
-        return {"status": "duplicate", "invoice": invoice_id}
+        return {"status": "duplicate", "order_id": order_id}
 
-    # --- Bug #14 fix: server-side verification via BTCPay API ---
-    btcpay_data = await _verify_invoice_with_btcpay(invoice_id)
-    if btcpay_data:
-        btcpay_status = btcpay_data.get("status", "").lower()
-        # Greenfield v1 uses "Settled"; "complete" kept for legacy v1 APIs.
-        if btcpay_status not in ("settled", "complete"):
+    # Server-side verification: call NOWPayments API to confirm
+    verified_data = await _verify_payment_with_nowpayments(payment_id)
+    if verified_data:
+        api_status = verified_data.get("payment_status", "")
+        if api_status != "finished":
             logger.warning(
-                "Invoice %s: webhook says settled but BTCPay API says '%s' — rejecting",
-                invoice_id, btcpay_status,
+                "Invoice %s: IPN says finished but API says '%s' — rejecting",
+                order_id, api_status,
             )
-            return {"status": "verification_failed", "invoice": invoice_id, "btcpay_status": btcpay_status}
+            return {"status": "verification_failed", "api_status": api_status}
 
-        # Verify currency — reject if BTCPay returns non-USD (misconfig protection).
-        btcpay_currency = btcpay_data.get("currency", "").upper()
-        if btcpay_currency and btcpay_currency != "USD":
+        # Verify amount (price_amount is in USD)
+        api_amount = Decimal(str(verified_data.get("price_amount", "0")))
+        if api_amount > 0 and api_amount != invoice.amount_usd:
             logger.error(
-                "Invoice %s: currency mismatch — expected USD, BTCPay says '%s'",
-                invoice_id, btcpay_currency,
+                "Invoice %s: amount mismatch — expected $%s, API says $%s",
+                order_id, invoice.amount_usd, api_amount,
             )
-            return {"status": "currency_mismatch", "invoice": invoice_id, "btcpay_currency": btcpay_currency}
-
-        # Verify amount matches
-        btcpay_amount = Decimal(str(btcpay_data.get("amount", "0")))
-        if btcpay_amount > 0 and btcpay_amount != invoice.amount_usd:
-            logger.error(
-                "Invoice %s: amount mismatch — expected $%s, BTCPay says $%s",
-                invoice_id, invoice.amount_usd, btcpay_amount,
-            )
-            return {"status": "amount_mismatch", "invoice": invoice_id}
+            return {"status": "amount_mismatch", "order_id": order_id}
     else:
-        logger.warning("Invoice %s: BTCPay verification unavailable, proceeding with HMAC-only trust", invoice_id)
+        logger.warning("Invoice %s: NOWPayments verification unavailable, proceeding with HMAC-only", order_id)
 
     # Mark as settled
     invoice.status = InvoiceStatus.settled
@@ -292,9 +294,19 @@ async def btcpay_webhook(request: Request, db: DbDep) -> dict:
         user.total_spent_usd = (user.total_spent_usd or Decimal("0")) + invoice.amount_usd
 
     await db.commit()
-    logger.info("Invoice %s settled (amount=$%s, verified=%s)", invoice_id, invoice.amount_usd, btcpay_data is not None)
+    logger.info("Invoice %s settled via NOWPayments (amount=$%s, payment_id=%s)", order_id, invoice.amount_usd, payment_id)
 
-    return {"status": "settled", "invoice": invoice_id, "verified": btcpay_data is not None}
+    return {"status": "settled", "order_id": order_id}
+
+
+# ---------------------------------------------------------------------------
+# Legacy BTCPay webhook — kept for backwards compatibility
+# ---------------------------------------------------------------------------
+
+@router.post("/webhook/btcpay", status_code=status.HTTP_200_OK)
+async def btcpay_webhook(request: Request) -> dict:
+    """Legacy BTCPay endpoint — returns 200 to prevent retries."""
+    return {"status": "deprecated", "message": "Use NOWPayments webhook"}
 
 
 @router.get("/invoices", response_model=list[InvoiceResponse])
